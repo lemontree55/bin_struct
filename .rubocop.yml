@@ -1,0 +1,21 @@
+require:
+  - rubocop-performance
+
+AllCops:
+  TargetRubyVersion: 2.7
+  NewCops: enable
+  Exclude:
+    - spec/**/*
+
+Layout/LineLength:
+  Max: 120
+Metrics/AbcSize:
+  Max: 20
+Metrics/ClassLength:
+  Max: 200
+Metrics/MethodLength:
+  Max: 20
+Style/FormatString:
+  EnforcedStyle: percent
+Style/FormatStringToken:
+  MaxUnannotatedPlaceholdersAllowed: 3
