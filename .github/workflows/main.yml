@@ -43,6 +43,6 @@ jobs:
         bundle add code-scanning-rubocop --version '= 0.5.0' --source 'https://rubygems.org'
         bundle exec rubocop --require code_scanning --format CodeScanning::SarifFormatter -o rubocop.sarif lib/
     - name: Upload Sarif output
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: rubocop.sarif
