@@ -18,7 +18,7 @@ module BinStruct
       end
 
       it 'reads only start of given string when length_from option was given' do
-        len = Int8.new(6)
+        len = Int8.new(value: 6)
         str = String.new(length_from: len)
         read_str = (0..15).to_a.pack('C*')
         str.read read_str
