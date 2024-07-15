@@ -40,7 +40,7 @@ jobs:
         bundler-cache: true
     - name: Run the rubocop task
       run: |
-        bundle add code-scanning-rubocop --version '= 0.5.0' --source 'https://rubygems.org' --skip-install
+        bundle add code-scanning-rubocop --version '= 0.5.0' --source 'https://rubygems.org'
         bundle exec rubocop --require code_scanning --format CodeScanning::SarifFormatter -o rubocop.sarif lib/
     - name: Upload Sarif output
       uses: github/codeql-action/upload-sarif@v2
