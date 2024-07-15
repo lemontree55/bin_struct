@@ -34,9 +34,9 @@ module BinStruct
       bytes = str.split(':')
       raise ArgumentError, 'not a OUI' unless bytes.size == 3
 
-      self[:b2].read(bytes[0].to_i(16))
-      self[:b1].read(bytes[1].to_i(16))
-      self[:b0].read(bytes[2].to_i(16))
+      self[:b2].from_human(bytes[0].to_i(16))
+      self[:b1].from_human(bytes[1].to_i(16))
+      self[:b0].from_human(bytes[2].to_i(16))
       self
     end
 

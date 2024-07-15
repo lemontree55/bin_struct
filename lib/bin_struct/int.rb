@@ -10,48 +10,46 @@ module BinStruct
   # Base integer class to handle binary integers
   # @abstract
   # @author Sylvain Daubert
-  # @since 3.3.1 support native endianess
+  # @author LemonTree55
   class Int
     include Fieldable
 
     # Integer value
-    # @return [Integer]
+    # @return [Integer,nil]
     attr_accessor :value
     # Integer endianness
-    # @return [:little,:big,:native]
-    # @since 3.3.1 add :native
+    # @return [:little,:big,:native,nil]
     attr_accessor :endian
     # Integer size, in bytes
-    # @return [Integer]
+    # @return [Integer, nil]
     attr_accessor :width
     # Integer default value
     # @return [Integer]
     attr_accessor :default
 
-    # @param [Integer,nil] value
-    # @param [:little,:big,nil] endian
-    # @param [Integer,nil] width
-    # @param [Integer] default
-    def initialize(value = nil, endian = nil, width = nil, default = 0)
-      @value = value
-      @endian = endian
-      @width = width
-      @default = default
+    # @param [Hash] options
+    # @option options [Integer, nil] :value
+    # @option options [:little,:big,nil] :endian
+    # @option options [Integer,nil] :width
+    # @option options [Integer] :default
+    # @author LemonTree55
+    def initialize(options = {})
+      @value = options[:value]
+      @endian = options[:endian]
+      @width = options[:width]
+      @default = options[:default] || 0
     end
 
     # @abstract
     # Read an Int from a binary string or an integer
-    # @param [Integer, #to_s] value
+    # @param [#to_s] str
     # @return [self]
     # @raise [Error] when reading +#to_s+ objects with abstract Int class.
-    def read(value)
-      @value = if value.is_a?(Integer)
-                 value.to_i
-               elsif defined? @packstr
-                 value.to_s.unpack1(@packstr[@endian])
-               else
-                 raise Error, 'Int#read is abstract and cannot read'
-               end
+    # @author LemonTree55
+    def read(str)
+      raise Error, 'BinStruct::Int#read is abstract' unless defined? @packstr
+
+      @value = str.to_s.unpack1(@packstr[@endian])
       self
     end
 
@@ -59,7 +57,7 @@ module BinStruct
     # @return [::String]
     # @raise [Error] This is an abstrat method and must be redefined
     def to_s
-      raise Error, 'BinStruct::Int#to_s is an abstract method' unless defined? @packstr
+      raise Error, 'BinStruct::Int#to_s is abstract' unless defined? @packstr
 
       [to_i].pack(@packstr[@endian])
     end
@@ -70,7 +68,13 @@ module BinStruct
       @value || @default
     end
     alias to_human to_i
-    alias from_human value=
+
+    # @param [Integer] value
+    # @return [self]
+    def from_human(value)
+      @value = value
+      self
+    end
 
     # Convert Int to Float
     # @return [Float]
@@ -92,7 +96,6 @@ module BinStruct
 
     # Return the number of bits used to encode this Int
     # @return [Integer]
-    # @since 3.2.1
     def nbits
       width * 8
     end
@@ -106,32 +109,44 @@ module BinStruct
 
   # One byte unsigned integer
   # @author Sylvain Daubert
+  # @author LemonTree55
   class Int8 < Int
-    # @param [Integer,nil] value
-    def initialize(value = nil)
-      super(value, nil, 1)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    # @author LemonTree55
+    def initialize(options = {})
+      options[:endian] = nil
+      options[:width] = 1
+      super
       @packstr = { nil => 'C' }
     end
   end
 
   # One byte signed integer
   # @author Sylvain Daubert
-  # @since 2.8.2
+  # @author LemonTree55
   class SInt8 < Int
-    # @param [Integer,nil] value
-    def initialize(value = nil)
-      super(value, nil, 1)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    # @author LemonTree55
+    def initialize(options = {})
+      options[:endian] = nil
+      options[:width] = 1
+      super
       @packstr = { nil => 'c' }
     end
   end
 
   # 2-byte unsigned integer
   # @author Sylvain Daubert
+  # @author LemonTree55
   class Int16 < Int
-    # @param [Integer,nil] value
-    # @param [:big, :little, :native] endian
-    def initialize(value = nil, endian = :big)
-      super(value, endian, 2)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    # @option [:big, :little, :native] :endian
+    def initialize(options = {})
+      opts = { value: options[:value], endian: options[:endian] || :big, width: 2 }
+      super(opts)
       @packstr = { big: 'n', little: 'v', native: 'S' }
     end
   end
@@ -144,111 +159,123 @@ module BinStruct
 
   # little endian 2-byte unsigned integer
   # @author Sylvain Daubert
+  # @author LemonTree55
   class Int16le < Int16
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :little)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # native endian 2-byte unsigned integer
   # @author Sylvain Daubert
-  # @since 3.3.1
+  # @author LemonTree55
   class Int16n < Int16
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :native)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :native }
+      super(opts)
     end
   end
 
   # 2-byte signed integer
   # @author Sylvain Daubert
-  # @since 2.8.2
+  # @author LemonTree55
   class SInt16 < Int16
-    # @param [Integer,nil] value
-    # @param [:big, :little] endian
-    def initialize(value = nil, endian = :big)
-      super
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = { value: options[:value], endian: options[:endian] || :big }
+      super(opts)
       @packstr = { big: 's>', little: 's<', native: 's' }
     end
   end
 
   # big endian 2-byte signed integer
   # @author Sylvain Daubert
-  # @since 2.8.2
   class SInt16be < SInt16
     undef endian=
   end
 
   # little endian 2-byte signed integer
   # @author Sylvain Daubert
-  # @since 2.8.2
+  # @author LemonTree55
   class SInt16le < SInt16
     # @param [Integer,nil] value
     undef endian=
 
     # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :little)
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # native endian 2-byte signed integer
   # @author Sylvain Daubert
-  # @since 3.3.1
+  # @author LemonTree55
   class SInt16n < SInt16
     # @param [Integer,nil] value
     undef endian=
 
     # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :native)
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :native }
+      super(opts)
     end
   end
 
   # 3-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 2.1.4
+  # @author LemonTree55
   class Int24 < Int
-    # @param [Integer,nil] value
-    # @param [:big, :little, :native] endian
-    def initialize(value = nil, endian = :big)
-      if endian == :native
-        endian = if [1].pack('S').unpack1('n') == 1
-                   :big
-                 else
-                   :little
-                 end
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    # @option options [:big, :little, :native] :endian
+    def initialize(options = {})
+      opts = options.slice(:value, :endian)
+      opts[:endian] ||= :big
+      opts[:width] = 3
+
+      if opts[:endian] == :native
+        opts[:endian] = if [1].pack('S').unpack1('n') == 1
+                          :big
+                        else
+                          :little
+                        end
       end
-      super(value, endian, 3)
+      super(opts)
     end
 
-    # Read an 3-byte Int from a binary string or an integer
-    # @param [Integer, String] value
+    # Read an 3-byte Int from a binary string
+    # @param [String] str
     # @return [self]
     def read(value)
       return self if value.nil?
 
-      @value = if value.is_a?(Integer)
-                 value.to_i
-               else
-                 up8 = down16 = 0
-                 if @endian == :big
-                   up8, down16 = value.to_s.unpack('Cn')
-                 else
-                   down16, up8 = value.to_s.unpack('vC')
-                 end
-                 (up8 << 16) | down16
-               end
+      up8 = down16 = 0
+      if @endian == :big
+        up8, down16 = value.to_s.unpack('Cn')
+      else
+        down16, up8 = value.to_s.unpack('vC')
+      end
+      @value = (up8 << 16) | down16
       self
     end
 
+    # @author Sylvain Daubert
     # @return [::String]
     def to_s
       up8 = to_i >> 16
@@ -263,44 +290,47 @@ module BinStruct
 
   # big endian 3-byte unsigned integer
   # @author Sylvain Daubert
-  # @since 2.1.4
   class Int24be < Int24
     undef endian=
   end
 
   # little endian 3-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 2.1.4
+  # @author LemonTree55
   class Int24le < Int24
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :little)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # native endian 3-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 3.3.1
+  # @author LemonTree55
   class Int24n < Int24
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :native)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # 4-byte unsigned integer
-  # @author Sylvain Daubert
+  # @author LemonTree55
   class Int32 < Int
-    # @param [Integer,nil] value
-    # @param [:big, :little, :native] endian
-    def initialize(value = nil, endian = :big)
-      super(value, endian, 4)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    # @option [:big, :little, :native] :endian
+    def initialize(options = {})
+      opts = { value: options[:value], endian: options[:endian] || :big, width: 4 }
+      super(opts)
       @packstr = { big: 'N', little: 'V', native: 'L' }
     end
   end
@@ -312,82 +342,91 @@ module BinStruct
   end
 
   # little endian 4-byte unsigned integer
-  # @author Sylvain Daubert
+  # @author LemonTree55
   class Int32le < Int32
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :little)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # native endian 4-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 3.3.1
+  # @author LemonTree55
   class Int32n < Int32
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :native)
+    # @param [Hash] options
+    # @option options [Integer,nil] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :native }
+      super(opts)
     end
   end
 
   # 4-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 2.8.2
+  # @author LemonTree55
   class SInt32 < Int32
-    # @param [Integer,nil] value
-    # @param [:big, :little] endian
-    def initialize(value = nil, endian = :big)
-      super
+    # @param [Hash] options
+    # @option options [Integer] :value
+    # @option options [:big, :little, :native] :endian
+    def initialize(options = {})
+      opts = { value: options[:value], endian: options[:endian] || :big }
+      super(opts)
       @packstr = { big: 'l>', little: 'l<', native: 'l' }
     end
   end
 
   # big endian 4-byte unsigned integer
   # @author Sylvain Daubert
-  # @since 2.8.2
   class SInt32be < SInt32
     undef endian=
   end
 
   # little endian 4-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 2.8.2
+  # @author LemonTree55
   class SInt32le < SInt32
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :little)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # native endian 4-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 3.3.1
+  # @author LemonTree55
   class SInt32n < SInt32
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :native)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :native }
+      super(opts)
     end
   end
 
   # 8-byte unsigned integer
-  # @author Sylvain Daubert
+  # @author LemonTree55
   class Int64 < Int
-    # @param [Integer,nil] value
-    # @param [:big, :little, :native] endian
-    def initialize(value = nil, endian = :big)
-      super(value, endian, 8)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    # @option options [:big, :little, :native] :endian
+    def initialize(options = {})
+      opts = options.slice(:value, :endian)
+      opts[:endian] ||= :big
+      opts[:width] = 8
+      super(opts)
       @packstr = { big: 'Q>', little: 'Q<', native: 'Q' }
     end
   end
@@ -399,72 +438,77 @@ module BinStruct
   end
 
   # little endian 8-byte unsigned integer
-  # @author Sylvain Daubert
+  # @author LemonTree55
   class Int64le < Int64
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :little)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # native endian 8-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 3.3.1
+  # @author LemonTree55
   class Int64n < Int64
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :native)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :native }
+      super(opts)
     end
   end
 
   # 8-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 2.8.2
+  # @author LemonTree55
   class SInt64 < Int64
-    # @param [Integer,nil] value
-    # @param [:big, :little, :native] endian
-    def initialize(value = nil, endian = :big)
-      super
+    # @param [Hash] options
+    # @option options [Integer] :value
+    # @option options [:big, :little, :native] :endian
+    def initialize(options = {})
+      opts = options.slice(:value, :endian)
+      super(opts)
       @packstr = { big: 'q>', little: 'q<', native: 'q' }
     end
   end
 
   # big endian 8-byte unsigned integer
   # @author Sylvain Daubert
-  # @since 2.8.2
   class SInt64be < SInt64
     undef endian=
   end
 
   # little endian 8-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 2.8.2
+  # @author LemonTree55
   class SInt64le < SInt64
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :little)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :little }
+      super(opts)
     end
   end
 
   # native endian 8-byte unsigned integer
-  # @author Sylvain Daubert
-  # @since 3.3.1
+  # @author LemonTree55
   class SInt64n < SInt64
     # @param [Integer,nil] value
     undef endian=
 
-    # @param [Integer, nil] value
-    def initialize(value = nil)
-      super(value, :native)
+    # @param [Hash] options
+    # @option options [Integer] :value
+    def initialize(options = {})
+      opts = { value: options[:value], endian: :native }
+      super(opts)
     end
   end
 end

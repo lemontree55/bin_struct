@@ -65,7 +65,6 @@ module BinStruct
   # * +:optional+ to define this field as optional. This option takes a lambda
   #   parameter used to say if this field is present or not. The lambda takes an argument
   #   ({Fields} subclass object owning field),
-  # * +:enum+ to define Hash enumeration for an {Enum} type.
   # For example:
   #   # 32-bit integer field defaulting to 1
   #   define_field :type, BinStruct::Int32, default: 1
@@ -107,7 +106,7 @@ module BinStruct
   # @author Sylvain Daubert
   class Fields
     # @private
-    FieldDef = Struct.new(:type, :default, :builder, :optional, :enum, :options)
+    FieldDef = Struct.new(:type, :default, :builder, :optional, :options)
     # @private field names, ordered as they were declared
     @ordered_fields = []
     # @private field definitions
@@ -175,8 +174,6 @@ module BinStruct
       # @option options [Lambda] :optional define this field as optional. Given lambda
       #   is used to known if this field is present or not. Parameter to this lambda is
       #   the being defined Field object.
-      # @option options [Hash] :enum mandatory option for an {Enum} type.
-      #   Define enumeration: hash's keys are +String+, and values are +Integer+.
       # @return [void]
       def define_field(name, type, options = {})
         fields << name
@@ -184,7 +181,6 @@ module BinStruct
                                         options.delete(:default),
                                         options.delete(:builder),
                                         options.delete(:optional),
-                                        options.delete(:enum),
                                         options)
 
         add_methods(name, type)
@@ -249,7 +245,7 @@ module BinStruct
       def update_field(field, options)
         check_existence_of field
 
-        %i[default builder optional enum].each do |property|
+        %i[default builder optional].each do |property|
           field_defs_property_from(field, property, options)
         end
 
@@ -583,8 +579,6 @@ module BinStruct
 
       @fields[field] = if field_defs[field].builder
                          field_defs[field].builder.call(self, type)
-                       elsif field_defs[field].enum
-                         type.new(field_defs[field].enum)
                        elsif !field_defs[field].options.empty?
                          type.new(field_defs[field].options)
                        else

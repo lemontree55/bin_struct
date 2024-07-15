@@ -106,7 +106,7 @@ module BinStruct
     # @return [void]
     def clear!
       @array.clear
-      @counter&.read(0)
+      @counter&.from_human(0)
     end
 
     # Delete an object from this array. Update associated counter if any
@@ -114,7 +114,7 @@ module BinStruct
     # @return [Object] deleted object
     def delete(obj)
       deleted = @array.delete(obj)
-      @counter.read(@counter.to_i - 1) if @counter && deleted
+      @counter.from_human(@counter.to_i - 1) if @counter && deleted
       deleted
     end
 
@@ -123,7 +123,7 @@ module BinStruct
     # @return [Object,nil] deleted object
     def delete_at(index)
       deleted = @array.delete_at(index)
-      @counter.read(@counter.to_i - 1) if @counter && deleted
+      @counter.from_human(@counter.to_i - 1) if @counter && deleted
       deleted
     end
 
@@ -150,7 +150,7 @@ module BinStruct
     # @return [Array] self
     def <<(obj)
       push obj
-      @counter&.read(@counter.to_i + 1)
+      @counter&.from_human(@counter.to_i + 1)
       self
     end
 

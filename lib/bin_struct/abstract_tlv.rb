@@ -120,8 +120,8 @@ module BinStruct
       # @param [Hash{String, Symbol => Integer}] hsh enum hash
       # @return [void]
       def define_type_enum(hsh)
-        field_defs[:type][:enum].clear
-        field_defs[:type][:enum].merge!(hsh)
+        field_defs[:type][:options][:enum].clear
+        field_defs[:type][:options][:enum].merge!(hsh)
       end
 
       # @abstract Should only be called on real TLV classes, created by {.create}.
@@ -178,7 +178,7 @@ module BinStruct
     #   @return [Integer]
     # @!attribute value
     #   @abstract Value attribute
-    #   @return [Object]
+    #   @return [Object]enum
 
     # @abstract Should only be called on real TLV classes, created by {.create}.
     # @param [Hash] options

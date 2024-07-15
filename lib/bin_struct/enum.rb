@@ -26,20 +26,23 @@ module BinStruct
   #  enum.value = 'unknown'  # => raise!
   # But {#read} will not raise when reading an outbound value. This
   # to enable decoding (or forging) of bad packets.
-  # @since 2.1.3
   # @author Sylvain Daubert
   class Enum < Int
     # @return [Hash]
     attr_reader :enum
 
-    # @param [Hash] enum enumerated values. Default value is taken from
-    #   first element unless given.
-    # @param [:little,:big,nil] endian
-    # @param [Integer,nil] width
-    # @param [Integer,nil] default default value
-    def initialize(enum, endian = nil, width = nil, default = nil)
-      default ||= enum[enum.keys.first]
-      super(nil, endian, width, default)
+    # @param [Hash] options
+    # @see Int#initialize
+    # @option options [Hash] enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
+    # @option options [Integer,String] :default
+    # @author LemonTree55
+    def initialize(options = {})
+      enum = options[:enum]
+      raise TypeError, 'enum must be defined as a Hash' unless enum.is_a?(Hash)
+
+      options[:default] ||= enum[enum.keys.first]
+      super
       @enum = enum
     end
 
@@ -53,7 +56,7 @@ module BinStruct
              when NilClass
                nil
              when ::String
-               raise ArgumentError, "#{value.inspect} not in enumeration" unless @enum.key? value
+               raise ArgumentError, "#{value.inspect} not in enumeration" unless @enum.key?(value)
 
                @enum[value]
              else
@@ -77,79 +80,103 @@ module BinStruct
   end
 
   # Enumeration on one byte. See {Enum}.
-  # @author Sylvain Daubert
-  # @since 2.1.3
+  # @author LemonTree55
   class Int8Enum < Enum
-    # @param [Integer] default
-    # @param [Hash] enum
-    def initialize(enum, default = nil)
-      super(enum, nil, 1, default)
+    # @param [Hash] options
+    # @option options [Hash] :enum
+    # @option options [Integer,::String] :value
+    # @option options [Integer,::String] :default
+    def initialize(options = {})
+      opts = options.slice(:enum, :value, :default)
+      opts[:width] = 1
+      opts[:endian] = nil
+      super(opts)
       @packstr = { nil => 'C' }
     end
   end
 
   # Enumeration on 2-byte integer. See {Enum}.
-  # @author Sylvain Daubert
-  # @since 2.1.3
+  # @author LemonTree55
   class Int16Enum < Enum
-    # @param [Hash] enum
-    # @param [:big, :little] endian
-    # @param [Integer,nil] default default value
-    def initialize(enum, endian = :big, default = nil)
-      super(enum, endian, 2, default)
+    # @param [Hash] options
+    # @option options [Hash] :enum
+    # @option options [:big,:little] :endian
+    # @option options [Integer,::String] :value
+    # @option options [Integer,::String] :default
+    def initialize(options = {})
+      opts = options.slice(:enum, :endian, :default, :value)
+      opts[:endian] ||= :big
+      opts[:width] = 2
+      super(opts)
       @packstr = { big: 'n', little: 'v' }
     end
   end
 
   # Enumeration on big endian 2-byte integer. See {Enum}.
   # @author Sylvain Daubert
-  # @since 2.1.3
   class Int16beEnum < Int16Enum
     undef endian=
 
-    # @param [Hash] enum
-    # @param [Integer,nil] default default value
-    def initialize(enum, default = nil)
-      super(enum, :big, default)
+    # @param [Hash] options
+    # @option options [Hash] :enum
+    # @option options [Integer,::String] :value
+    # @option options [Integer,::String] :default
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = options.slice(:enum, :default, :value)
+      opts[:endian] = :big
+      super(opts)
     end
   end
 
   # Enumeration on big endian 2-byte integer. See {Enum}.
   # @author Sylvain Daubert
-  # @since 2.1.3
   class Int16leEnum < Int16Enum
     undef endian=
 
-    # @param [Hash] enum
-    # @param [Integer,nil] default default value
-    def initialize(enum, default = nil)
-      super(enum, :little, default)
+    # @param [Hash] options
+    # @option options [Hash] :enum
+    # @option options [Integer,::String] :value
+    # @option options [Integer,::String] :default
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = options.slice(:enum, :default, :value)
+      opts[:endian] = :little
+      super(opts)
     end
   end
 
   # Enumeration on 4-byte integer. See {Enum}.
-  # @author Sylvain Daubert
-  # @since 2.1.3
+  # @author LemonTree55
   class Int32Enum < Enum
-    # @param [Hash] enum
-    # @param [:big, :little] endian
-    # @param [Integer,nil] default default value
-    def initialize(enum, endian = :big, default = nil)
-      super(enum, endian, 4, default)
+    # @param [Hash] options
+    # @option options [Hash] :enum
+    # @option options [:big,:little] :endian
+    # @option options [Integer,::String] :value
+    # @option options [Integer,::String] :default
+    def initialize(options = {})
+      opts = options.slice(:enum, :endian, :default, :value)
+      opts[:endian] ||= :big
+      opts[:width] = 4
+      super(opts)
       @packstr = { big: 'N', little: 'V' }
     end
   end
 
   # Enumeration on big endian 4-byte integer. See {Enum}.
   # @author Sylvain Daubert
-  # @since 2.1.3
   class Int32beEnum < Int32Enum
     undef endian=
 
-    # @param [Hash] enum
-    # @param [Integer,nil] default default value
-    def initialize(enum, default = nil)
-      super(enum, :big, default)
+    # @param [Hash] options
+    # @option options [Hash] :enum
+    # @option options [Integer,::String] :value
+    # @option options [Integer,::String] :default
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = options.slice(:enum, :default, :value)
+      opts[:endian] = :big
+      super(opts)
     end
   end
 
@@ -159,10 +186,15 @@ module BinStruct
   class Int32leEnum < Int32Enum
     undef endian=
 
-    # @param [Hash] enum
-    # @param [Integer,nil] default default value
-    def initialize(enum, default = nil)
-      super(enum, :little, default)
+    # @param [Hash] options
+    # @option options [Hash] :enum
+    # @option options [Integer,::String] :value
+    # @option options [Integer,::String] :default
+    # @author LemonTree55
+    def initialize(options = {})
+      opts = options.slice(:enum, :default, :value)
+      opts[:endian] = :little
+      super(opts)
     end
   end
 end

@@ -40,7 +40,7 @@ module BinStruct
     # @param [Integer] len
     # @return [Integer]
     def length=(len)
-      @length.read len
+      @length.from_human(len)
     end
 
     # @return [Integer]

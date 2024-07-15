@@ -6,7 +6,7 @@ ENUM_HASH = { 'low' => 0, 'medium' => 1, 'high' => 2 }.freeze
 
 module BinStruct
   RSpec.describe Enum do
-    let(:enum) { Enum.new(ENUM_HASH) }
+    let(:enum) { Enum.new(enum: ENUM_HASH) }
 
     describe '#value=' do
       it 'accepts Integers in enum range' do
@@ -71,7 +71,7 @@ module BinStruct
   end
 
   RSpec.describe Int8Enum do
-    let(:enum8) { Int8Enum.new(ENUM_HASH) }
+    let(:enum8) { Int8Enum.new(enum: ENUM_HASH) }
 
     describe '#read' do
       it 'reads a single byte in enum range' do
@@ -103,7 +103,7 @@ module BinStruct
 
   [Int16Enum, Int16beEnum].each do |klass|
     RSpec.describe klass do
-      let(:enum16) { klass.new(ENUM_HASH) }
+      let(:enum16) { klass.new(enum: ENUM_HASH) }
 
       describe '#read' do
         it 'reads two bytes in enum range' do
@@ -135,7 +135,7 @@ module BinStruct
   end
 
   RSpec.describe Int16leEnum do
-    let(:enum16le) { Int16leEnum.new(ENUM_HASH) }
+    let(:enum16le) { Int16leEnum.new(enum: ENUM_HASH) }
 
     describe '#read' do
       it 'reads two bytes in enum range' do
@@ -167,7 +167,7 @@ module BinStruct
 
   [Int32Enum, Int32beEnum].each do |klass|
     RSpec.describe klass do
-      let(:enum32) { klass.new(ENUM_HASH) }
+      let(:enum32) { klass.new(enum: ENUM_HASH) }
 
       describe '#read' do
         it 'reads two bytes in enum range' do
@@ -199,7 +199,7 @@ module BinStruct
   end
 
   RSpec.describe Int32leEnum do
-    let(:enum32le) { Int32leEnum.new(ENUM_HASH) }
+    let(:enum32le) { Int32leEnum.new(enum: ENUM_HASH) }
 
     describe '#read' do
       it 'reads two bytes in enum range' do
