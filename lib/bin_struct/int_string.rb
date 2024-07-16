@@ -17,11 +17,12 @@ module BinStruct
     # @return [String]
     attr_reader :string
 
-    # @param [Class] len_type should be a {Int} subclass
-    # @param [::String] string
-    def initialize(len_type = Int8, string: '')
-      @string = BinStruct::String.new.read(string)
-      @length = len_type.new
+    # @param [Hash] options
+    # @option options [Class] :length_type should be a {Int} subclass. Default to {Int8}.
+    # @option options [::String] :string String value. Default to +''+
+    def initialize(options = {})
+      @string = BinStruct::String.new.read(options[:string] || '')
+      @length = (options[:length_type] || Int8).new
       calc_length
     end
 
