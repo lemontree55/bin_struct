@@ -330,7 +330,7 @@ module BinStruct
         end
 
         define.delete_at(1) if instance_methods.include?(:"#{name}=")
-        define.delete_at(0) if instance_methods.include? name
+        define.delete_at(0) if instance_methods.include?(name)
         class_eval define.join("\n")
       end
 
@@ -495,7 +495,7 @@ module BinStruct
     #  to let +inspect+ generate it
     # @return [String]
     def inspect
-      str = +''
+      str = inspect_titleize
       fields.each do |attr|
         next if attr == :body
         next unless present?(attr)
@@ -598,7 +598,7 @@ module BinStruct
       value = val || default
       if value.class <= type
         @fields[field] = value
-      elsif @fields[field].respond_to? :from_human
+      elsif @fields[field].respond_to?(:from_human)
         @fields[field].from_human(value)
       else
         @fields[field].read(value)
@@ -608,6 +608,11 @@ module BinStruct
     def initialize_optional(field)
       optional = field_defs[field].optional
       @optional_fields[field] = optional if optional
+    end
+
+    def inspect_titleize
+      title = self.class.to_s
+      +"-- #{title} #{'-' * (66 - title.length)}\n"
     end
 
     def inspect_attribute(attr, value, level = 1)
