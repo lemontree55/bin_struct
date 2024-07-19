@@ -76,14 +76,14 @@ module BinStruct
     # @param [#to_s] str
     # @return [self]
     def <<(str)
-      @string << str.to_s
+      @string << BinStruct.force_binary(str.to_s)
       self
     end
 
     # Generate binary string
     # @return [String]
     def to_s
-      BinStruct.force_binary(@string)
+      @string
     end
 
     alias sz length
