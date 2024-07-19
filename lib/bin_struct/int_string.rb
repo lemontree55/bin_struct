@@ -66,7 +66,7 @@ module BinStruct
     # @param [String] str
     # @return [self]
     def from_human(str)
-      @string.read str
+      @string.read(str)
       calc_length
       self
     end
@@ -81,7 +81,7 @@ module BinStruct
     # Set length from internal string length
     # @return [Integer]
     def calc_length
-      @length.read @string.length
+      @length.from_human(@string.length)
     end
 
     # Give binary string length (including +length+ field)

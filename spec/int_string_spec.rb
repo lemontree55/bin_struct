@@ -57,5 +57,15 @@ module BinStruct
         expect(is8.to_s).to eq(binary("\x0aThis is a String"))
       end
     end
+
+    describe '#from_human' do
+      let(:is8) { IntString.new }
+
+      it 'computes length from data' do
+        is8.from_human('test')
+        expect(is8.string).to eq('test')
+        expect(is8.length).to eq(4)
+      end
+    end
   end
 end
