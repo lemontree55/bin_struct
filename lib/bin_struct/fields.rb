@@ -114,6 +114,9 @@ module BinStruct
     # @private bit field definitions
     @bit_fields = {}
 
+    # Format to inspect attribute
+    FMT_ATTR = "%14s %16s: %s\n"
+
     class << self
       # Get field definitions for this class.
       # @return [Hash]
@@ -483,7 +486,7 @@ module BinStruct
       self
     end
 
-    # Common inspect method for headers.
+    # Common inspect method for structs.
     #
     # A block may be given to differently format some attributes. This
     # may be used by subclasses to handle specific fields.
@@ -492,13 +495,13 @@ module BinStruct
     #  to let +inspect+ generate it
     # @return [String]
     def inspect
-      str = Inspect.dashed_line(self.class, 1)
+      str = +''
       fields.each do |attr|
         next if attr == :body
         next unless present?(attr)
 
         result = yield(attr) if block_given?
-        str << (result || Inspect.inspect_attribute(attr, self[attr], 1))
+        str << (result || inspect_attribute(attr, self[attr], 1))
       end
       str
     end
@@ -605,6 +608,20 @@ module BinStruct
     def initialize_optional(field)
       optional = field_defs[field].optional
       @optional_fields[field] = optional if optional
+    end
+
+    def inspect_attribute(attr, value, level = 1)
+      type = value.class.to_s.sub(/.*::/, '')
+      inspect_format(type, attr, value.format_inspect, level)
+    end
+
+    def inspect_format(type, attr, value, level = 1)
+      str = inspect_shift_level(level)
+      str << (FMT_ATTR % [type, attr, value])
+    end
+
+    def inspect_shift_level(level = 1)
+      '  ' * (level + 1)
     end
   end
 end

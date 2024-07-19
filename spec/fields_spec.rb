@@ -315,5 +315,54 @@ module BinStruct
         expect(f.to_s).to eq(binary("\x00\x00\x00\x00"))
       end
     end
+
+    describe '#inspect' do
+      class FInspectTest < Fields
+        define_field :is, IntString, default: 'test'
+        define_field :int, Int8
+        define_field :int2, Int16
+        define_field :enum, Int32Enum, enum: {'no' => 0, 'yes' => 1 }
+
+        define_bit_fields_on :int2, :one, 4, :two, 2, :three, :four, :five, 8
+      end
+
+      class FInspectedTest < FInspectTest
+        def inspect
+          super do |attr|
+            if attr == :is
+              FMT_ATTR % [self[attr].class, attr, "#{self[attr].length}#{self[attr].string}"]
+            end
+          end
+        end
+      end
+
+      let(:inspect_lines) { FInspectTest.new.inspect.lines }
+
+      it 'shows Int fields' do
+        expect(inspect_lines).to include(/Int8\s+int: 0\s+\(0x00\)/)
+        expect(inspect_lines).to include(/Int16\s+int2: 0\s+\(0x0000\)/)
+      end
+
+      it 'does not show bit fields' do
+        expect(inspect_lines).to_not include(/one/)
+        expect(inspect_lines).to_not include(/two/)
+        expect(inspect_lines).to_not include(/three/)
+        expect(inspect_lines).to_not include(/four/)
+        expect(inspect_lines).to_not include(/five/)
+      end
+
+      it 'shows Enum fields' do
+        expect(inspect_lines).to include(/Int32Enum\s+enum: no\s+\(0x00000000\)/)
+      end
+
+      it 'shows IntString fields' do
+        expect(inspect_lines).to include(/IntString\s+is: test/)
+      end
+
+      it 'uses delegation' do
+        lines = FInspectedTest.new.inspect.lines
+        expect(lines).to include(/BinStruct::IntString\s+is: 4test/)
+      end
+    end
   end
 end
