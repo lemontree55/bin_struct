@@ -74,4 +74,23 @@ module BinStruct
       end
     end
   end
+
+  # Check at least one flavor of ArrayOfInt
+  RSpec.describe ArrayOfInt16 do
+    describe '#read' do
+      let (:array) { ArrayOfInt16.new }
+
+      it 'from an Array' do
+        array.read([0, 1, 65535])
+        expect(array.to_s).to eq(binary("\x00\x00\x00\x01\xff\xff"))
+      end
+
+      it 'from a String' do
+        array.read(binary("\x00\x00\x00\x01\xff\xff"))
+        expect(array[0].to_i).to eq(0)
+        expect(array[1].to_i).to eq(1)
+        expect(array[2].to_i).to eq(0xffff)
+      end
+    end
+  end
 end

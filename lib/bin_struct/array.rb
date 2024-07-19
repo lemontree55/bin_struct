@@ -135,7 +135,7 @@ module BinStruct
     def push(obj)
       obj = case obj
             when Hash
-              record_from_hash obj
+              record_from_hash(obj)
             else
               obj
             end
@@ -149,7 +149,7 @@ module BinStruct
     # @param [Object] obj type depends on subclass
     # @return [Array] self
     def <<(obj)
-      push obj
+      push(obj)
       @counter&.from_human(@counter.to_i + 1)
       self
     end
@@ -251,7 +251,7 @@ module BinStruct
       return self if ary.empty?
 
       ary.each do |i|
-        self << self.class.set_of_klass.new(i)
+        self << self.class.set_of_klass.new(value: i)
       end
     end
   end
