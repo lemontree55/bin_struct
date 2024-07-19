@@ -17,7 +17,7 @@ module BinStruct
     include Fieldable
     include LengthFrom
 
-    def_delegators :@string, :[], :to_s, :length, :size, :inspect, :==,
+    def_delegators :@string, :[], :length, :size, :inspect, :==,
                    :unpack, :force_encoding, :encoding, :index, :empty?,
                    :encode, :slice, :slice!, :[]=
 
@@ -78,6 +78,12 @@ module BinStruct
     def <<(str)
       @string << str.to_s
       self
+    end
+
+    # Generate binary string
+    # @return [String]
+    def to_s
+      BinStruct.force_binary(@string)
     end
 
     alias sz length
