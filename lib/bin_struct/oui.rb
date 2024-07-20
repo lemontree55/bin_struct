@@ -11,23 +11,26 @@ module BinStruct
   #  oui = OUI.new
   #  oui.from_human('00:01:02')
   #  oui.to_human   # => "00:01:02"
-  # @author Sylvain Daubert
-  class OUI < Fields
-    include Fieldable
+  #  oui.to_s       # => "\x00\x01\x03"
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
+  class OUI < Struct
+    include Structable
 
     # @attribute b2
     #  @return [Integer] left-most byte
-    define_field :b2, Int8
+    define_attr :b2, Int8
     # @attribute b1
     #  @return [Integer] center byte
-    define_field :b1, Int8
+    define_attr :b1, Int8
     # @attribute b0
     #  @return [Integer] right-most byte
-    define_field :b0, Int8
+    define_attr :b0, Int8
 
     # Read a human-readable string to populate object
-    # @param [String] str
-    # @return [OUI] self
+    # @param [::String] str
+    # @return [self]
+    # @raise [ArgumentError] OUI cannot be recognized from +str+
     def from_human(str)
       return self if str.nil?
 
@@ -41,9 +44,9 @@ module BinStruct
     end
 
     # Get OUI in human readable form (colon-separated bytes)
-    # @return [String]
+    # @return [::String]
     def to_human
-      fields.map { |m| '%02x' % self[m] }.join(':')
+      attributes.map { |m| '%02x' % self[m] }.join(':')
     end
   end
 end

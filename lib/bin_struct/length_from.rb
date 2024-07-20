@@ -10,16 +10,16 @@ module BinStruct
   # This module is a mixin adding +length_from+ capacity to a type.
   # +length_from+ capacity is the capacity, for a type, to gets its
   # length from another object.
-  # @author Sylvain Daubert
-  # @since 3.0.0
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   module LengthFrom
     # Max value returned by {#sz_to_read}.
     MAX_SZ_TO_READ = 65_535
 
-    # Initialize +length from+ capacity.
-    # Should be call by extensed object's initialize.
+    # Initialize +length_from+ capacity.
+    # Should be called by extended object's initialize method.
     # @param [Hash] options
-    # @option options [Types::Int,Proc] :length_from object or proc from which
+    # @option options [Int,Proc] :length_from object or proc from which
     #   takes length when reading
     # @return [void]
     def initialize_length_from(options)
@@ -28,7 +28,7 @@ module BinStruct
 
     # Return a substring from +str+ of length given in another object.
     # @param [#to_s] str
-    # @return [String]
+    # @return [::String]
     def read_with_length_from(str)
       s = BinStruct.force_binary(str.to_s)
       s[0, sz_to_read]

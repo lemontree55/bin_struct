@@ -9,10 +9,15 @@
 require 'forwardable'
 
 module BinStruct
-  # @abstract Base class to define set of {Fields} subclasses.
+  # @abstract Base class to define set of {Struct} subclasses.
+  #
+  # This class mimics regular Ruby Array, but it is {Structable} and responds to {LengthFrom}.
+  #
+  # Concrete subclasses may define 2 private methods:
+  #
   # == #record_from_hash
-  # Subclasses should define private method +#record_from_hash+. This method
-  # is called by {#push} to add an object to the set.
+  # This method
+  # is called by {#push} and {#<<} to add an object to the set.
   #
   # A default method is defined by {Array}: it calls constructor of class defined
   # by {.set_of}.
@@ -24,16 +29,17 @@ module BinStruct
   #
   # Default behaviour of this method is to return argument's class.
   #
-  # @author Sylvain Daubert
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class Array
     extend Forwardable
     include Enumerable
-    include Fieldable
+    include Structable
     include LengthFrom
 
     # @!method [](index)
     #   Return the element at +index+.
-    #   @param [integer] index
+    #   @param [Integer] index
     #   @return [Object]
     # @!method clear
     #   Clear array.
@@ -41,10 +47,10 @@ module BinStruct
     # @!method each
     #   Calls the given block once for each element in self, passing that
     #   element as a parameter. Returns the array itself.
-    #   @return [Array]
+    #   @return [::Array]
     # @method empty?
     #   Return +true+ if contains no element.
-    #   @return [Booelan]
+    #   @return [Boolean]
     # @!method first
     #   Return first element
     #   @return [Object]
@@ -58,14 +64,13 @@ module BinStruct
     alias length size
 
     # Separator used in {#to_human}.
-    # May be ovverriden by subclasses
+    # May be overriden by subclasses
     HUMAN_SEPARATOR = ','
 
     # rubocop:disable Naming/AccessorMethodName
     class << self
       # Get class set with {.set_of}.
       # @return [Class]
-      # @since 3.0.0
       def set_of_klass
         @klass
       end
@@ -89,10 +94,13 @@ module BinStruct
 
     # Initialize array for copy:
     # * duplicate internal array.
+    # @note Associated counter, if any, is not duplicated
     def initialize_copy(_other)
       @array = @array.dup
     end
 
+    # Check equality. Equality is checked on underlying array.
+    # @return [Boolean]
     def ==(other)
       @array == case other
                 when Array
@@ -118,7 +126,7 @@ module BinStruct
       deleted
     end
 
-    # Delete element at +index+.
+    # Delete element at +index+. Update associated counter if any
     # @param [Integer] index
     # @return [Object,nil] deleted object
     def delete_at(index)
@@ -129,9 +137,10 @@ module BinStruct
 
     # @abstract depend on private method +#record_from_hash+ which should be
     #   declared by subclasses.
-    # Add an object to this array
+    # Add an object to this array. Do not update associated counter.
     # @param [Object] obj type depends on subclass
-    # @return [Array] self
+    # @return [self]
+    # @see #<<
     def push(obj)
       obj = case obj
             when Hash
@@ -147,7 +156,7 @@ module BinStruct
     #   declared by subclasses.
     # Add an object to this array, and increment associated counter, if any
     # @param [Object] obj type depends on subclass
-    # @return [Array] self
+    # @return [self]
     def <<(obj)
       push(obj)
       @counter&.from_human(@counter.to_i + 1)
@@ -155,7 +164,7 @@ module BinStruct
     end
 
     # Populate object from a string or from an array of hashes
-    # @param [String, Array<Hash>] data
+    # @param [::String, ::Array<Hash>] data
     # @return [self]
     def read(data)
       clear
@@ -174,20 +183,20 @@ module BinStruct
       to_s.size
     end
 
-    # Return an Array
+    # Return underlying Ruby Array
     # @return [::Array]
     def to_a
       @array
     end
 
     # Get binary string
-    # @return [String]
+    # @return [::String]
     def to_s
       @array.map(&:to_s).join
     end
 
     # Get a human readable string
-    # @return [String]
+    # @return [::String]
     def to_human
       @array.map(&:to_human).join(self.class::HUMAN_SEPARATOR)
     end
@@ -256,31 +265,31 @@ module BinStruct
     end
   end
 
-  # Specialized array to handle serie of {Int8}.
+  # Specialized {Array} to handle serie of {Int8}.
   class ArrayOfInt8 < Array
     include ArrayOfIntMixin
     set_of Int8
   end
 
-  # Specialized array to handle serie of {Int16}.
+  # Specialized {Array} to handle serie of {Int16}.
   class ArrayOfInt16 < Array
     include ArrayOfIntMixin
     set_of Int16
   end
 
-  # Specialized array to handle serie of {Int16le}.
+  # Specialized {Array} to handle serie of {Int16le}.
   class ArrayOfInt16le < Array
     include ArrayOfIntMixin
     set_of Int16le
   end
 
-  # Specialized array to handle serie of {Int32}.
+  # Specialized {Array} to handle serie of {Int32}.
   class ArrayOfInt32 < BinStruct::Array
     include ArrayOfIntMixin
     set_of Int32
   end
 
-  # Specialized array to handle serie of {Int32le}.
+  # Specialized {Array} to handle serie of {Int32le}.
   class ArrayOfInt32le < BinStruct::Array
     include ArrayOfIntMixin
     set_of Int32le

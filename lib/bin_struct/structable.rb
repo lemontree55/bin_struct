@@ -7,17 +7,17 @@
 # This program is published under MIT license.
 
 module BinStruct
-  # Mixin to define minimal API for a class to be embbeded as a field in
-  # {Fields} type.
+  # Mixin to define minimal API for a class to be embbeded as an attribute in
+  # {Struct} object.
   #
   # == Optional methods
-  # These methods may, optionally, be defined by fieldable types:
-  # * +from_human+ to load data from a human-readable string.
-  # @author Sylvain Daubert
-  # @since 3.1.6
-  module Fieldable
+  # This method may, optionally, be defined by structable types:
+  # * +from_human+ to load data from a human-readable ruby object (String, Integer,...).
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
+  module Structable
     # Get type name
-    # @return [String]
+    # @return [::String]
     def type_name
       self.class.to_s.split('::').last
     end
@@ -26,15 +26,15 @@ module BinStruct
     # These methods are defined for documentation.
 
     # Populate object from a binary string
-    # @param [String] str
-    # @return [Fields] self
+    # @param [::String] str
+    # @return [self]
     # @abstract subclass should overload it.
     def read(str)
       super
     end
 
     # Return object as a binary string
-    # @return [String]
+    # @return [::String]
     # @abstract subclass should overload it.
     def to_s
       super
@@ -46,8 +46,8 @@ module BinStruct
       to_s.size
     end
 
-    # Return a human-readbale string
-    # @return [String]
+    # Return a human-readbale object
+    # @return [::String,Integer]
     # @abstract subclass should overload it.
     def to_human
       super
@@ -55,8 +55,8 @@ module BinStruct
 
     # rubocop:enable Lint/UselessMethodDefinition
 
-    # Format object when inspecting a {Fields} object
-    # @return [String]
+    # Format object when inspecting a {Struct} object
+    # @return [::String]
     def format_inspect
       to_human
     end

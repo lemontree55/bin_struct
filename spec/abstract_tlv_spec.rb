@@ -11,36 +11,36 @@ module BinStruct
   RSpec.describe AbstractTLV do
     describe '.create' do
       let(:tlv_class) { AbstractTLV.create }
-      it 'returns a class, subclass of BinStruct::Fields' do
+      it 'returns a class, subclass of BinStruct::Struct' do
         expect(tlv_class).to be_a(Class)
-        expect(tlv_class).to be < Fields
+        expect(tlv_class).to be < BinStruct::Struct
       end
 
       it 'returns a class, with type attribute a BinStruct::Int8Enum' do
-        expect(tlv_class.field_defs[:type][:type]).to eq(Int8Enum)
+        expect(tlv_class.attr_defs[:type][:type]).to eq(Int8Enum)
       end
 
       it 'returns a class, with length attribute a BinStruct::Int8' do
-        expect(tlv_class.field_defs[:length][:type]).to eq(Int8)
+        expect(tlv_class.attr_defs[:length][:type]).to eq(Int8)
       end
 
       it 'returns a class, with value attribute a BinStruct::String' do
-        expect(tlv_class.field_defs[:value][:type]).to eq(BinStruct::String)
+        expect(tlv_class.attr_defs[:value][:type]).to eq(BinStruct::String)
       end
 
       it 'accepts a type argument' do
         tlv_class = AbstractTLV.create(type_class: Int16)
-        expect(tlv_class.field_defs[:type][:type]).to eq(Int16)
+        expect(tlv_class.attr_defs[:type][:type]).to eq(Int16)
       end
 
       it 'accepts a length argument' do
         tlv_class = AbstractTLV.create(length_class: Int16)
-        expect(tlv_class.field_defs[:length][:type]).to eq(Int16)
+        expect(tlv_class.attr_defs[:length][:type]).to eq(Int16)
       end
 
       it 'accepts a value argument' do
         tlv_class = AbstractTLV.create(value_class: Int32)
-        expect(tlv_class.field_defs[:value][:type]).to eq(Int32)
+        expect(tlv_class.attr_defs[:value][:type]).to eq(Int32)
       end
 
       it 'raises when called on a subclass' do
@@ -105,8 +105,8 @@ module BinStruct
           expect(tlv.length).to eq(6)
         end
 
-        it 'sets #length when field_in_length contains "L"' do
-          tlv = AbstractTLV.create(type_class: Int16, length_class: Int16, field_in_length: 'TLV').new
+        it 'sets #length when attr_in_length contains "L"' do
+          tlv = AbstractTLV.create(type_class: Int16, length_class: Int16, attr_in_length: 'TLV').new
           tlv.value = 'abcdef'
           expect(tlv.length).to eq(10)
         end
@@ -138,7 +138,7 @@ module BinStruct
 
     context 'use of instance with inverted type and length' do
       let(:ltv) do
-        AbstractTLV.create(type_class: Int16, length_class: Int16, field_order: 'LTV', field_in_length: 'LTV').new
+        AbstractTLV.create(type_class: Int16, length_class: Int16, attr_order: 'LTV', attr_in_length: 'LTV').new
       end
 
       describe '#read' do
@@ -152,7 +152,7 @@ module BinStruct
       end
 
       describe '#value=' do
-        it 'sets #length when field_in_length contains "L"' do
+        it 'sets #length when attr_in_length contains "L"' do
           ltv.value = 'abcdef'
           expect(ltv.length).to eq(10)
         end

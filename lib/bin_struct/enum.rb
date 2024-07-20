@@ -9,12 +9,12 @@
 module BinStruct
   # @abstract Base enum class to handle binary integers with limited
   #   authorized values
-  # An {Enum} type is used to handle an {Int} field with limited
+  # An {Enum} type is used to handle an {Int} attribute with limited
   # and named values.
   #
   # == Simple example
   #  enum = Int8Enum.new('low' => 0, 'medium' => 1, 'high' => 2})
-  # In this example, +enum+ is a 8-bit field which may take one
+  # In this example, +enum+ is a 8-bit attribute which may take one
   # among three values: +low+, +medium+ or +high+:
   #  enum.value = 'high'
   #  enum.value              # => 2
@@ -26,16 +26,18 @@ module BinStruct
   #  enum.value = 'unknown'  # => raise!
   # But {#read} will not raise when reading an outbound value. This
   # to enable decoding (or forging) of bad packets.
-  # @author Sylvain Daubert
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class Enum < Int
-    # @return [Hash]
+    # Enumerated values
+    # @return [Hash{::String => Integer}]
     attr_reader :enum
 
     # @param [Hash] options
     # @see Int#initialize
-    # @option options [Hash] enum enumerated values. Default value is taken from
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
     #   first element unless given. This option is mandatory.
-    # @option options [Integer,String] :default
+    # @option options [Integer,::String] :default
     # @author LemonTree55
     def initialize(options = {})
       enum = options[:enum]
@@ -69,11 +71,13 @@ module BinStruct
     alias from_human value=
 
     # Get human readable value (enum name)
-    # @return [String]
+    # @return [::String]
     def to_human
       @enum.key(to_i) || "<unknown:#{@value}>"
     end
 
+    # Format Enum type when inspecting Struct
+    # @return [::String]
     def format_inspect
       format_str % [to_human, to_i]
     end
@@ -83,7 +87,8 @@ module BinStruct
   # @author LemonTree55
   class Int8Enum < Enum
     # @param [Hash] options
-    # @option options [Hash] :enum
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
     # @option options [Integer,::String] :value
     # @option options [Integer,::String] :default
     def initialize(options = {})
@@ -99,7 +104,8 @@ module BinStruct
   # @author LemonTree55
   class Int16Enum < Enum
     # @param [Hash] options
-    # @option options [Hash] :enum
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
     # @option options [:big,:little] :endian
     # @option options [Integer,::String] :value
     # @option options [Integer,::String] :default
@@ -113,15 +119,16 @@ module BinStruct
   end
 
   # Enumeration on big endian 2-byte integer. See {Enum}.
-  # @author Sylvain Daubert
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class Int16beEnum < Int16Enum
     undef endian=
 
     # @param [Hash] options
-    # @option options [Hash] :enum
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
     # @option options [Integer,::String] :value
     # @option options [Integer,::String] :default
-    # @author LemonTree55
     def initialize(options = {})
       opts = options.slice(:enum, :default, :value)
       opts[:endian] = :big
@@ -129,16 +136,17 @@ module BinStruct
     end
   end
 
-  # Enumeration on big endian 2-byte integer. See {Enum}.
-  # @author Sylvain Daubert
+  # Enumeration on little endian 2-byte integer. See {Enum}.
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class Int16leEnum < Int16Enum
     undef endian=
 
     # @param [Hash] options
-    # @option options [Hash] :enum
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
     # @option options [Integer,::String] :value
     # @option options [Integer,::String] :default
-    # @author LemonTree55
     def initialize(options = {})
       opts = options.slice(:enum, :default, :value)
       opts[:endian] = :little
@@ -150,7 +158,8 @@ module BinStruct
   # @author LemonTree55
   class Int32Enum < Enum
     # @param [Hash] options
-    # @option options [Hash] :enum
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
     # @option options [:big,:little] :endian
     # @option options [Integer,::String] :value
     # @option options [Integer,::String] :default
@@ -164,15 +173,16 @@ module BinStruct
   end
 
   # Enumeration on big endian 4-byte integer. See {Enum}.
-  # @author Sylvain Daubert
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class Int32beEnum < Int32Enum
     undef endian=
 
     # @param [Hash] options
-    # @option options [Hash] :enum
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
     # @option options [Integer,::String] :value
     # @option options [Integer,::String] :default
-    # @author LemonTree55
     def initialize(options = {})
       opts = options.slice(:enum, :default, :value)
       opts[:endian] = :big
@@ -180,17 +190,17 @@ module BinStruct
     end
   end
 
-  # Enumeration on big endian 4-byte integer. See {Enum}.
-  # @author Sylvain Daubert
-  # @since 2.1.3
+  # Enumeration on little endian 4-byte integer. See {Enum}.
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class Int32leEnum < Int32Enum
     undef endian=
 
     # @param [Hash] options
-    # @option options [Hash] :enum
+    # @option options [Hash{::String => Integer}] :enum enumerated values. Default value is taken from
+    #   first element unless given. This option is mandatory.
     # @option options [Integer,::String] :value
     # @option options [Integer,::String] :default
-    # @author LemonTree55
     def initialize(options = {})
       opts = options.slice(:enum, :default, :value)
       opts[:endian] = :little

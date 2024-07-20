@@ -7,5 +7,6 @@
 # This program is published under MIT license.
 
 module BinStruct
+  # BinStruct version
   VERSION = '0.1.0'
 end

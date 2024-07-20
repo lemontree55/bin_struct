@@ -12,7 +12,7 @@ module BinStruct
         expect(oui.b0).to eq(0)
       end
 
-      it 'accepts field options' do
+      it 'accepts attribute options' do
         oui = OUI.new(b2: 45, b1: 2, b0: 128)
         expect(oui.b2).to eq(45)
         expect(oui.b1).to eq(2)

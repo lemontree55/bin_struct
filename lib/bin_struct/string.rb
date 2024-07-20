@@ -9,25 +9,27 @@
 require 'forwardable'
 
 module BinStruct
-  # This class mimics regular String, but it is {Fieldable}.
-  # @author Sylvain Daubert
-  # @since 3.1.6 no more a subclass or regular String
+  # This class mimics regular String, but it is {Structable}.
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class String
     extend Forwardable
-    include Fieldable
+    include Structable
     include LengthFrom
 
     def_delegators :@string, :[], :length, :size, :inspect, :==,
                    :unpack, :force_encoding, :encoding, :index, :empty?,
                    :encode, :slice, :slice!, :[]=
 
+    # Underlying Ruby String
     # @return [::String]
     attr_reader :string
+    # String static length, if set
     # @return [Integer]
     attr_reader :static_length
 
     # @param [Hash] options
-    # @option options [Types::Int,Proc] :length_from object or proc from which
+    # @option options [Int,Proc] :length_from object or proc from which
     #   takes length when reading
     # @option options [Integer] :static_length set a static length for this string
     def initialize(options = {})
@@ -36,15 +38,19 @@ module BinStruct
       @static_length = options[:static_length]
     end
 
+    # Initialize object on copying:
+    # * duplicate underlying Ruby String
+    # @return [void]
     def initialize_copy(_orig)
       @string = @string.dup
     end
 
+    # Populate String from a binary String. Limit length using {LengthFrom} or {#static_length}, if one is set.
     # @param [::String] str
-    # @return [String] self
+    # @return [self]
     def read(str)
       s = read_with_length_from(str)
-      register_internal_string s
+      register_internal_string(s)
       self
     end
 
@@ -52,9 +58,8 @@ module BinStruct
     private :old_sz_to_read
 
     # Size to read.
-    # Computed from static_length or length_from, if defined.
+    # Computed from {#static_length} or +length_from+, if one defined.
     # @return [Integer]
-    # @since 3.1.6
     def sz_to_read
       return static_length if static_length?
 
@@ -63,11 +68,12 @@ module BinStruct
 
     # Say if a static length is defined
     # @return [Boolean]
-    # @since 3.1.6
     def static_length?
       !static_length.nil?
     end
 
+    # Format String when inspecting from a {Struct}
+    # @return [::String]
     def format_inspect
       inspect
     end
@@ -81,7 +87,7 @@ module BinStruct
     end
 
     # Generate binary string
-    # @return [String]
+    # @return [::String]
     def to_s
       @string
     end

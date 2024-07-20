@@ -7,27 +7,29 @@
 # This program is published under MIT license.
 
 module BinStruct
-  # Provides a class for creating strings preceeded by their length as a {Int}.
+  # Provides a class for creating strings preceeded by their length as an {Int}.
   # By default, a null string will have one byte length (length byte set to 0).
-  # @author Sylvain Daubert
+  # @author Sylvain Daubert (2016-2024)
+  # @author LemonTree55
   class IntString
-    include Fieldable
+    include Structable
 
     # internal string
-    # @return [String]
+    # @return [::String]
     attr_reader :string
 
     # @param [Hash] options
     # @option options [Class] :length_type should be a {Int} subclass. Default to {Int8}.
-    # @option options [::String] :string String value. Default to +''+
+    # @option options [::String] :string String value. Default to +""+
     def initialize(options = {})
       @string = BinStruct::String.new.read(options[:string] || '')
       @length = (options[:length_type] || Int8).new
       calc_length
     end
 
+    # Populate IntString from a binary String
     # @param [::String] str
-    # @return [IntString] self
+    # @return [self]
     def read(str)
       unless str[0, @length.width].size == @length.width
         raise Error,
@@ -38,19 +40,23 @@ module BinStruct
       self
     end
 
+    # Set length
     # @param [Integer] len
     # @return [Integer]
     def length=(len)
       @length.from_human(len)
+      len
     end
 
+    # Get length as registered in +IntLength+
     # @return [Integer]
     def length
       @length.to_i
     end
 
+    # Set string without setting {#length}
     # @param [#to_s] str
-    # @return [String]
+    # @return [::String]
     def string=(str)
       @length.value = str.to_s.size
       @string = str.to_s
@@ -63,7 +69,7 @@ module BinStruct
     end
 
     # Set from a human readable string
-    # @param [String] str
+    # @param [::String] str
     # @return [self]
     def from_human(str)
       @string.read(str)
@@ -73,7 +79,6 @@ module BinStruct
 
     # Get human readable string
     # @return [::String]
-    # @since 2.2.0
     def to_human
       @string
     end
@@ -84,7 +89,7 @@ module BinStruct
       @length.from_human(@string.length)
     end
 
-    # Give binary string length (including +length+ field)
+    # Give binary string length (including +length+ attribute)
     # @return [Integer]
     def sz
       to_s.size

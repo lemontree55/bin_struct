@@ -1,6 +1,6 @@
 # BinStruct
 
-BinStruct provides a simple ways to create and dissect binary data. It is an extraction from [PacketGen](https://github.com/lemontree55/packetgen) fields.
+BinStruct provides a simple way to create and dissect binary data. It is an extraction from [PacketGen](https://github.com/lemontree55/packetgen) 3.x Fields.
 
 ## Installation
 

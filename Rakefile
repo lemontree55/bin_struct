@@ -11,4 +11,11 @@ RuboCop::RakeTask.new do |task|
   task.patterns = ['lib/**/*.rb']
 end
 
+require 'yard'
+
+YARD::Rake::YardocTask.new do |t|
+  t.options = ['--no-private']
+  t.files = ['lib/**/*.rb', '-', 'LICENSE.txt']
+end
+
 task default: %i[spec rubocop]

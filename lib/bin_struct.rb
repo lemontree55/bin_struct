@@ -22,10 +22,10 @@ module BinStruct
   end
 end
 
-require_relative 'bin_struct/fieldable'
+require_relative 'bin_struct/structable'
 require_relative 'bin_struct/int'
 require_relative 'bin_struct/enum'
-require_relative 'bin_struct/fields'
+require_relative 'bin_struct/struct'
 require_relative 'bin_struct/length_from'
 require_relative 'bin_struct/abstract_tlv'
 require_relative 'bin_struct/array'
