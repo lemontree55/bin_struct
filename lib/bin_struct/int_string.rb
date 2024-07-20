@@ -45,7 +45,9 @@ module BinStruct
     # @return [Integer]
     def length=(len)
       @length.from_human(len)
+      # rubocop:disable Lint/Void
       len
+      # rubocop:enable Lint/Void
     end
 
     # Get length as registered in +IntLength+
