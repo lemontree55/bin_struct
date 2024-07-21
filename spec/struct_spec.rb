@@ -366,5 +366,13 @@ module BinStruct
         expect(lines).to include(/BinStruct::IntString\s+is: 4test/)
       end
     end
+
+    describe '#to_h' do
+      it 'generates a Hash with attributes/values as keys/values' do
+        s = OffsetTest.new(one: 1, two: 2, three: 3, four: 4)
+        h = s.to_h
+        expect(h).to eq({ one: 1, two: 2, three: 3, four: 4 })
+      end
+    end
   end
 end

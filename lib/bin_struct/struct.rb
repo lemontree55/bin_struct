@@ -517,7 +517,7 @@ module BinStruct
     # Return object as a hash
     # @return [Hash] keys: attributes, values: attribute values
     def to_h
-      attributes.to_h { |attr| [f, @attributes[attr].to_human] }
+      attributes.to_h { |attr| [attr, @attributes[attr].to_human] }
     end
 
     # Get offset of given attribute in {Struct}.
