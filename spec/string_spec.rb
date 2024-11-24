@@ -8,7 +8,24 @@ module BinStruct
       expect { String.new(length_from: nil) }.to_not raise_error
     end
 
-    context '#read' do
+    describe '#initialize_copy' do
+      it 'duplicates internal string' do
+        s1 = String.new.read('qwerty')
+        s2 = s1.dup
+        s2 << 'uiop'
+        expect(s1.to_s).to_not eq(s2.to_s)
+      end
+    end
+
+    describe '#<<' do
+      it 'appends string to String' do
+        s = String.new.read('qwerty')
+        s << 'uiop'
+        expect(s.string).to eq('qwertyuiop')
+      end
+    end
+
+    describe '#read' do
       it 'reads all given string when no length_from option was given' do
         str = String.new
         read_str = (0..15).to_a.pack('C*')
