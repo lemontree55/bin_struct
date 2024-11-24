@@ -1,5 +1,5 @@
 [![Gem Version](https://badge.fury.io/rb/bin_struct.svg)](https://badge.fury.io/rb/bin_struct)
-[![CI](https://github.com/lemontree55/bin_struct/actions/workflows/main/badge.svg)](https://github.com/lemontree55/bin_struct/actions/workflows/main.yml)
+[![Specs](https://github.com/lemontree55/bin_struct/actions/workflows/main.yml/badge.svg)](https://github.com/lemontree55/bin_struct/actions/workflows/main.yml)
 
 # BinStruct
 
