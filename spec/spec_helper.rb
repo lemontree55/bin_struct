@@ -2,6 +2,16 @@
 
 Warning[:deprecated] = true
 
+begin
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter '/spec/'
+    add_filter '/vendor/'
+  end
+rescue LoadError
+  nil
+end
+
 require 'bin_struct'
 
 RSpec.configure do |config|
