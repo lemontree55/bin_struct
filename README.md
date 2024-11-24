@@ -1,4 +1,5 @@
 [![Gem Version](https://badge.fury.io/rb/bin_struct.svg)](https://badge.fury.io/rb/bin_struct)
+[![CI](https://github.com/lemontree55/bin_struct/actions/workflows/main/badge.svg)](https://github.com/lemontree55/bin_struct/actions/workflows/main.yml)
 
 # BinStruct
 
@@ -8,9 +9,12 @@ BinStruct provides a simple way to create and dissect binary data. It is an extr
 
 Installation using RubyGems is easy:
 
-    $ gem install bin_struct
+```shell
+gem install bin_struct
+```
 
 Or add it to a Gemfile:
+
 ```ruby
 gem 'bin_struct'
 ```
