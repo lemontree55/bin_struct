@@ -67,5 +67,17 @@ module BinStruct
         expect(is8.length).to eq(4)
       end
     end
+
+    describe '#empty?' do
+      it 'returns true if length is zero' do
+        expect(IntString.new.empty?).to be(true)
+      end
+
+      it 'returns false if length is not zero' do
+        is = IntString.new
+        is.length = 42
+        expect(is.empty?).to be(false)
+      end
+    end
   end
 end
