@@ -20,9 +20,9 @@ module BinStruct
 
     # @param [Hash] options
     # @option options [Class] :length_type should be a {Int} subclass. Default to {Int8}.
-    # @option options [::String] :string String value. Default to +""+
+    # @option options [::String] :value String value. Default to +""+
     def initialize(options = {})
-      @string = BinStruct::String.new.read(options[:string] || '')
+      @string = BinStruct::String.new.read(options[:value] || +'')
       @length = (options[:length_type] || Int8).new
       calc_length
     end

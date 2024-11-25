@@ -76,8 +76,9 @@ module BinStruct
 
     # @param [Hash] options
     # @option options [Integer] :static_length set a static length for this string
+    # @option options [::String] :value string value (default to +''+)
     def initialize(options = {})
-      register_internal_string(+'')
+      register_internal_string(options[:value] || +'')
       @static_length = options[:static_length]
     end
 

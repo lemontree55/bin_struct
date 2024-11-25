@@ -4,8 +4,15 @@ require_relative 'spec_helper'
 
 module BinStruct
   RSpec.describe String do
-    it '#initialize accepts a option hash' do
-      expect { String.new(length_from: nil) }.to_not raise_error
+    describe '#initialize' do
+      it 'accepts a option hash' do
+        expect { String.new(length_from: nil) }.to_not raise_error
+      end
+
+      it 'accepts a value' do
+        s = String.new(value: 'test')
+        expect(s.string).to eq('test')
+      end
     end
 
     describe '#initialize_copy' do

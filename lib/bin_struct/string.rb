@@ -32,8 +32,9 @@ module BinStruct
     # @option options [Int,Proc] :length_from object or proc from which
     #   takes length when reading
     # @option options [Integer] :static_length set a static length for this string
+    # @option options [::String] :value string value (default to +''+)
     def initialize(options = {})
-      register_internal_string(+'')
+      register_internal_string(options[:value] || +'')
       initialize_length_from(options)
       @static_length = options[:static_length]
     end

@@ -16,6 +16,12 @@ module BinStruct
         is = IntString.new(length_type: Int64)
         expect(is.sz).to eq(8)
       end
+
+      it 'accepts a value' do
+        is = IntString.new(value: 'test')
+        expect(is.string).to eq('test')
+      end
+
     end
 
     describe '#read' do

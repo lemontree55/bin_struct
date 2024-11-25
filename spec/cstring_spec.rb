@@ -11,6 +11,11 @@ module BinStruct
         expect(cs.sz).to eq(1)
       end
 
+      it 'accepts a value' do
+        cs = CString.new(value: 'test')
+        expect(cs.string).to eq('test')
+      end
+
       it 'accepts a static_length option' do
         cs = CString.new(static_length: 8)
         expect(cs.sz).to eq(8)
