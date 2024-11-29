@@ -19,3 +19,5 @@ Style/FormatString:
   EnforcedStyle: percent
 Style/FormatStringToken:
   MaxUnannotatedPlaceholdersAllowed: 3
+Style/HashLikeCase:
+  MinBranchesCount: 4
