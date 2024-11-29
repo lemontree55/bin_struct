@@ -270,6 +270,7 @@ module BinStruct
       # @param [:big,:little,:native] endian endianess of Integer
       # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
       # @return [void]
+      # @since 0.3.0
       def define_bit_attr(attr, endian: :big, **fields)
         width = fields.reduce(0) { |acc, ary| acc + ary.last }
         bit_attr_klass = BitAttr.create(width: width, endian: endian, **fields)
@@ -577,26 +578,39 @@ module BinStruct
       end
     end
 
+    # @param [Symbol] attr
+    # @return [void]
     def initialize_optional(attr)
       optional = attr_defs[attr].optional
       @optional_attributes[attr] = optional if optional
     end
 
+    # @return [String]
     def inspect_titleize
       title = self.class.to_s
       +"-- #{title} #{'-' * (66 - title.length)}\n"
     end
 
+    # @param [:Symbol] attr
+    # @param [Structable] value
+    # @param [Integer] level
+    # @return [::String]
     def inspect_attribute(attr, value, level = 1)
-      type = value.class.to_s.sub(/.*::/, '')
-      inspect_format(type, attr, value.format_inspect, level)
-    end
-
-    def inspect_format(type, attr, value, level = 1)
       str = inspect_shift_level(level)
-      str << (FMT_ATTR % [type, attr, value])
+      value_lines = value.format_inspect.split("\n")
+      str << (FMT_ATTR % [value.type_name, attr, value_lines.shift])
+      return str if value_lines.empty?
+
+      shift = (FMT_ATTR % ['', '', 'START']).index('START')
+      value_lines.each do |l|
+        str << inspect_shift_level(level)
+        str << (' ' * shift) << l << "\n"
+      end
+      str
     end
 
+    # @param [Integer] level
+    # @return [String]
     def inspect_shift_level(level = 1)
       '  ' * (level + 1)
     end

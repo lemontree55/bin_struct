@@ -96,6 +96,19 @@ module BinStruct
       @bit_methods.freeze
     end
 
+    # Get type name
+    # @return [::String]
+    def type_name
+      return @type_name if defined? @type_name
+
+      endian_suffix = case @int.endian
+                      when :big then ''
+                      when :little then 'le'
+                      when :native then 'n'
+                      end
+      @type_name = "BitAttr#{@width}#{endian_suffix}"
+    end
+
     # Populate bit attribute from +str+
     # @param [::String,nil] str
     # @return [self]
@@ -131,6 +144,11 @@ module BinStruct
     # @return [self]
     def from_human(value)
       compute_data(value.to_i)
+    end
+
+    def format_inspect
+      str = @int.format_inspect << "\n"
+      str << @data.map { |name, value| "#{name}:#{value}" }.join(' ')
     end
 
     private

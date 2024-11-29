@@ -380,17 +380,9 @@ module BinStruct
       let(:inspect_lines) { BSStructSpec::FInspectTest.new.inspect.lines }
 
       it 'shows Int attributes' do
-        pending
         expect(inspect_lines).to include(/Int8\s+int: 0\s+\(0x00\)/)
-        expect(inspect_lines).to include(/Int16\s+int2: 0\s+\(0x0000\)/)
-      end
-
-      it 'does not show bit attributes' do
-        expect(inspect_lines).to_not include(/one/)
-        expect(inspect_lines).to_not include(/two/)
-        expect(inspect_lines).to_not include(/three/)
-        expect(inspect_lines).to_not include(/four/)
-        expect(inspect_lines).to_not include(/five/)
+        expect(inspect_lines).to include(/BitAttr16\s+int2: 0\s+\(0x0000\)/)
+        expect(inspect_lines).to include(/one:0 two:0 three:0 four:0 five:0/)
       end
 
       it 'shows Enum attributes' do
