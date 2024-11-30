@@ -195,11 +195,7 @@ module BinStruct
         define_attr name, type, options
         return if other.nil?
 
-        attributes.delete(name)
-        idx = attributes.index(other)
-        raise ArgumentError, "unknown #{other} attribute" if idx.nil?
-
-        attributes[idx, 0] = name
+        move_attr(name, before: other)
       end
 
       # Define an attribute, after another one
@@ -214,11 +210,7 @@ module BinStruct
         define_attr name, type, options
         return if other.nil?
 
-        attributes.delete(name)
-        idx = attributes.index(other)
-        raise ArgumentError, "unknown #{other} attribute" if idx.nil?
-
-        attributes[idx + 1, 0] = name
+        move_attr(name, after: other)
       end
 
       # Remove a previously defined attribute
@@ -285,7 +277,61 @@ module BinStruct
         end
       end
 
+      # Define a bit attribute, before another attribute
+      # @param [Symbol,nil] other attribute name to create a new one before.
+      #    If +nil+, new attribute is appended.
+      # @param [Symbol] name attribute name to create
+      # @param [:big,:little,:native] endian endianess of Integer
+      # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
+      # @return [void]
+      # @since 0.3.0
+      # @see .define_bit_attr
+      def define_bit_attr_before(other, name, endian: :big, **fields)
+        define_bit_attr(name, endian: endian, **fields)
+        return if other.nil?
+
+        move_attr(name, before: other)
+      end
+
+      # Define a bit attribute after another attribute
+      # @param [Symbol,nil] other attribute name to create a new one after.
+      #    If +nil+, new attribute is appended.
+      # @param [Symbol] name attribute name to create
+      # @param [:big,:little,:native] endian endianess of Integer
+      # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
+      # @return [void]
+      # @since 0.3.0
+      # @see .define_bit_attr
+      def define_bit_attr_after(other, name, endian: :big, **fields)
+        define_bit_attr(name, endian: endian, **fields)
+        return if other.nil?
+
+        move_attr(name, after: other)
+      end
+
       private
+
+      # @param [Symbol] name
+      # @param [Symbol,nil] before
+      # @param [Symbol,nil] after
+      # @return [void]
+      # @raise [ArgumentError] Both +before+ and +after+ are nil, or both are set.
+      def move_attr(name, before: nil, after: nil)
+        move_check_destination(before, after)
+
+        other = before || after
+        attributes.delete(name)
+        idx = attributes.index(other)
+        raise ArgumentError, "unknown #{other} attribute" if idx.nil?
+
+        idx += 1 unless after.nil?
+        attributes[idx, 0] = name
+      end
+
+      def move_check_destination(before, after)
+        raise ArgumentError 'one of before: and after: arguments MUST be set' if before.nil? && after.nil?
+        raise ArgumentError 'only one of before and after argument MUST be set' if !before.nil? && !after.nil?
+      end
 
       def add_methods(name, type)
         define = []
@@ -306,72 +352,13 @@ module BinStruct
         class_eval define.join("\n")
       end
 
-      def add_bit_methods(attr, name, size, total_size, idx)
-        shift = idx - (size - 1)
-
-        if size == 1
-          add_single_bit_methods(attr, name, size, total_size, shift)
-        else
-          add_multibit_methods(attr, name, size, total_size, shift)
-        end
-      end
-
-      def compute_mask(size, shift)
-        ((2**size) - 1) << shift
-      end
-
-      def compute_clear_mask(total_size, mask)
-        ((2**total_size) - 1) & (~mask & ((2**total_size) - 1))
-      end
-
-      def add_single_bit_methods(attr, name, size, total_size, shift)
-        mask = compute_mask(size, shift)
-        clear_mask = compute_clear_mask(total_size, mask)
-
-        class_eval <<-METHODS, __FILE__, __LINE__ + 1
-          def #{name}?                                                  # def bit?
-            val = (self[:#{attr}].to_i & #{mask}) >> #{shift}           #   val = (self[:attr}].to_i & 1}) >> 1
-            val != 0                                                    #   val != 0
-          end                                                           # end
-          def #{name}=(v)                                               # def bit=(v)
-            val = v ? 1 : 0                                             #   val = v ? 1 : 0
-            self[:#{attr}].value = self[:#{attr}].to_i & #{clear_mask}  #   self[:attr].value = self[:attr].to_i & 0xfffd
-            self[:#{attr}].value |= val << #{shift}                     #   self[:attr].value |= val << 1
-          end                                                           # end
-        METHODS
-      end
-
-      def add_multibit_methods(attr, name, size, total_size, shift)
-        mask = compute_mask(size, shift)
-        clear_mask = compute_clear_mask(total_size, mask)
-
-        class_eval <<-METHODS, __FILE__, __LINE__ + 1
-          def #{name}                                                   # def multibit
-            (self[:#{attr}].to_i & #{mask}) >> #{shift}                 #   (self[:attr].to_i & 6) >> 1
-          end                                                           # end
-          def #{name}=(v)                                               # def multibit=(v)
-            self[:#{attr}].value = self[:#{attr}].to_i & #{clear_mask}  #   self[:attr].value = self[:attr].to_i & 0xfff9
-            self[:#{attr}].value |= (v & #{(2**size) - 1}) << #{shift}    #   self[:attr].value |= (v & 3) << 1
-          end                                                           # end
-        METHODS
-      end
-
       def register_bit_attr_field(attr, field)
-        # TODO: add methods
         bit_attrs[attr] ||= []
         bit_attrs[attr] << field
       end
 
       def attr_defs_property_from(attr, property, options)
         attr_defs[attr].send(:"#{property}=", options.delete(property)) if options.key?(property)
-      end
-
-      def size_from(args)
-        if args.first.is_a? Integer
-          args.shift
-        else
-          1
-        end
       end
 
       def check_existence_of(attr)

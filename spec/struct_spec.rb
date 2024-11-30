@@ -285,6 +285,50 @@ module BinStruct
       end
     end
 
+    describe '.define_bit_attr_before' do
+      before(:each) do
+        BSStructSpec::STest.class_eval do
+          define_attr :f1, Int8
+          define_attr :f2, Int8
+        end
+      end
+
+      it 'adds a attribute before another one' do
+        BSStructSpec::STest.class_eval { define_bit_attr_before :f1, :f3, one: 1, two: 7 }
+        expect(BSStructSpec::STest.new.attributes).to eq(%i[f3 f1 f2])
+
+        BSStructSpec::STest.class_eval { define_bit_attr_before :f2, :f4, one: 8 }
+        expect(BSStructSpec::STest.new.attributes).to eq(%i[f3 f1 f4 f2])
+      end
+
+      it 'raises on unknown before attribute' do
+        expect { BSStructSpec::STest.class_eval { define_bit_attr_before :unk, :f3, one: 8 } }
+          .to raise_error(ArgumentError, 'unknown unk attribute')
+      end
+    end
+
+    describe '.define_bit_attr_after' do
+      before(:each) do
+        BSStructSpec::STest.class_eval do
+          define_attr :f1, Int8
+          define_attr :f2, Int8
+        end
+      end
+
+      it 'adds a attribute after another one' do
+        BSStructSpec::STest.class_eval { define_bit_attr_after :f1, :f3, one: 1, two: 7 }
+        expect(BSStructSpec::STest.new.attributes).to eq(%i[f1 f3 f2])
+
+        BSStructSpec::STest.class_eval { define_bit_attr_after :f2, :f4, one: 8 }
+        expect(BSStructSpec::STest.new.attributes).to eq(%i[f1 f3 f2 f4])
+      end
+
+      it 'raises on unknown after attribute' do
+        expect { BSStructSpec::STest.class_eval { define_bit_attr_before :unk, :f3, one: 8 } }
+          .to raise_error(ArgumentError, 'unknown unk attribute')
+      end
+    end
+
     describe '#initialize' do
       it 'accepts a Structurable object as value for an attribute' do
         object_value = Int8.new(value: 42)
