@@ -260,13 +260,14 @@ module BinStruct
       # @param [Symbol] attr attribute name
       #   subclass)
       # @param [:big,:little,:native] endian endianess of Integer
+      # @param [Integer] default default value for whole attribute
       # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
       # @return [void]
       # @since 0.3.0
-      def define_bit_attr(attr, endian: :big, **fields)
+      def define_bit_attr(attr, endian: :big, default: 0, **fields)
         width = fields.reduce(0) { |acc, ary| acc + ary.last }
         bit_attr_klass = BitAttr.create(width: width, endian: endian, **fields)
-        define_attr(attr, bit_attr_klass)
+        define_attr(attr, bit_attr_klass, default: default)
         fields.each_key { |field| register_bit_attr_field(attr, field) }
         bit_attr_klass.new.bit_methods.each do |meth|
           if meth.to_s.end_with?('=')

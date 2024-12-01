@@ -235,6 +235,16 @@ module BinStruct
         expect(ft.b2).to be(0)
       end
 
+      it 'adds a bit attribute with default value' do
+        BSStructSpec::STest.class_eval do
+          define_bit_attr :u8, default: 0x78, a: 4, b: 4
+        end
+        ft = BSStructSpec::STest.new
+        expect(ft.u8).to eq(0x78)
+        expect(ft.a).to eq(7)
+        expect(ft.b).to eq(8)
+      end
+
       it 'defines boolean methods on 1-bit attributes' do
         BSStructSpec::STest.class_eval do
           define_bit_attr :u8, b0: 1, b1: 1, b2: 6
