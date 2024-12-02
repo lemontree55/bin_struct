@@ -88,15 +88,16 @@ module BinStruct
   # * +#frag+ and +#frag=+ to access +frag+ attribute as a 16-bit integer,
   # * +#flag_rsv?+, +#flag_rsv=+, +#flag_df?+, +#flag_df=+, +#flag_mf?+ and +#flag_mf=+
   #   to access Boolean RSV, MF and DF flags from +frag+ attribute,
+  # * +#flag_rsv+, +#flag_df+ and +#flag_mf# to read RSV, MF and DF flags as Integer,
   # * +#fragment_offset+ and +#fragment_offset=+ to access 13-bit integer fragment
   #   offset subattribute from +frag+ attribute.
   #
   # == Creating a new Struct class from another one
   # Some methods may help in this case:
-  # * {.define_attr_before} to define a new attribute before an existing one,
-  # * {.define_attr_after} to define a new attribute after an existing onr,
+  # * {.define_attr_before} and {.define_bit_attr_before} to define a new attribute before an existing one,
+  # * {.define_attr_after} and {.define_bit_attr_after} to define a new attribute after an existing onr,
   # * {.remove_attr} to remove an existing attribute,
-  # * {.uptade_fied} to change options of an attribute (but not its type),
+  # * {.uptade_attr} to change options of an attribute (but not its type),
   #
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
@@ -242,10 +243,9 @@ module BinStruct
         attr_defs[name].options.merge!(options)
       end
 
-      # Define a bit attribute on given attribute
+      # Define a bit attribute
       #   class MyHeader < BinStruct::Struct
-      #     define_attr :flags, BinStruct::Int16
-      #     # define a bit attribute named :flag
+      #     # define a 16-bit attribute named :flag
       #     # flag1, flag2 and flag3 are 1-bit attributes
       #     # type and stype are 3-bit attributes. reserved is a 7-bit attribute
       #     define_bit_attr :flags, flag1: 1, flag2: 1, flag3: 1, type: 3, stype: 3, reserved: 7
@@ -258,7 +258,6 @@ module BinStruct
       # * +#attr+ which returns an Integer,
       # * +#attr=+ which takes an Integer.
       # @param [Symbol] attr attribute name
-      #   subclass)
       # @param [:big,:little,:native] endian endianess of Integer
       # @param [Integer] default default value for whole attribute
       # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
