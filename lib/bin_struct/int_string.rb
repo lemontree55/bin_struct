@@ -61,7 +61,7 @@ module BinStruct
     # @return [::String]
     def string=(str)
       @length.value = str.to_s.size
-      @string = str.to_s
+      @string.read(str)
     end
 
     # Get binary string
@@ -82,7 +82,7 @@ module BinStruct
     # Get human readable string
     # @return [::String]
     def to_human
-      @string
+      @string.to_s
     end
 
     # Set length from internal string length

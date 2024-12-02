@@ -81,25 +81,23 @@ module BinStruct
   #   define_attr :opt1, BinStruct::Int16, optional: ->(h) { h.type == 42 }
   #
   # == Generating bit attributes
-  # {.define_bit_attr_on} creates bit attributes on a previously declared integer
-  # attribute. For example, +frag+ attribute in IP header:
-  #   define_attr :frag, BinStruct::Int16, default: 0
-  #   define_bit_attr_on :frag, :flag_rsv, :flag_df, :flag_mf, :fragment_offset, 13
+  # {.define_bit_attr} creates a bit attribute. For example, +frag+ attribute in IP header:
+  #   define_bit_attr :frag, flag_rsv: 1, flag_df: 1, flag_mf: 1, fragment_offset: 13
   #
   # This example generates methods:
   # * +#frag+ and +#frag=+ to access +frag+ attribute as a 16-bit integer,
   # * +#flag_rsv?+, +#flag_rsv=+, +#flag_df?+, +#flag_df=+, +#flag_mf?+ and +#flag_mf=+
   #   to access Boolean RSV, MF and DF flags from +frag+ attribute,
+  # * +#flag_rsv+, +#flag_df+ and +#flag_mf# to read RSV, MF and DF flags as Integer,
   # * +#fragment_offset+ and +#fragment_offset=+ to access 13-bit integer fragment
   #   offset subattribute from +frag+ attribute.
   #
   # == Creating a new Struct class from another one
   # Some methods may help in this case:
-  # * {.define_attr_before} to define a new attribute before an existing one,
-  # * {.define_attr_after} to define a new attribute after an existing onr,
-  # * {.remove_attribute} to remove an existing attribute,
-  # * {.uptade_fied} to change options of an attribute (but not its type),
-  # * {.remove_bit_attrs_on} to remove bit attribute definition.
+  # * {.define_attr_before} and {.define_bit_attr_before} to define a new attribute before an existing one,
+  # * {.define_attr_after} and {.define_bit_attr_after} to define a new attribute after an existing onr,
+  # * {.remove_attr} to remove an existing attribute,
+  # * {.uptade_attr} to change options of an attribute (but not its type),
   #
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
@@ -121,7 +119,7 @@ module BinStruct
       # @return [Hash]
       attr_reader :attr_defs
       # Get bit attribute defintions for this class
-      # @return [Hash]
+      # @return [Hash{Symbol=>Array[Symbol]}]
       attr_reader :bit_attrs
 
       # On inheritage, create +@attr_defs+ class variable
@@ -198,11 +196,7 @@ module BinStruct
         define_attr name, type, options
         return if other.nil?
 
-        attributes.delete name
-        idx = attributes.index(other)
-        raise ArgumentError, "unknown #{other} attribute" if idx.nil?
-
-        attributes[idx, 0] = name
+        move_attr(name, before: other)
       end
 
       # Define an attribute, after another one
@@ -217,11 +211,7 @@ module BinStruct
         define_attr name, type, options
         return if other.nil?
 
-        attributes.delete name
-        idx = attributes.index(other)
-        raise ArgumentError, "unknown #{other} attribute" if idx.nil?
-
-        attributes[idx + 1, 0] = name
+        move_attr(name, after: other)
       end
 
       # Remove a previously defined attribute
@@ -229,9 +219,12 @@ module BinStruct
       # @return [void]
       def remove_attr(name)
         attributes.delete(name)
-        @attr_defs.delete(name)
+        attr_def = attr_defs.delete(name)
         undef_method name if method_defined?(name)
         undef_method :"#{name}=" if method_defined?(:"#{name}=")
+        return unless bit_attrs[name]
+
+        attr_def.type.new.bit_methods.each { |meth| undef_method(meth) }
       end
 
       # Update a previously defined attribute
@@ -250,64 +243,95 @@ module BinStruct
         attr_defs[name].options.merge!(options)
       end
 
-      # Define a bit attribute on given attribute
+      # Define a bit attribute
       #   class MyHeader < BinStruct::Struct
-      #     define_attr :flags, BinStruct::Int16
-      #     # define a bit attribute on :flag attribute
+      #     # define a 16-bit attribute named :flag
       #     # flag1, flag2 and flag3 are 1-bit attributes
-      #     # type and stype are 3-bit attributes. reserved is a 6-bit attribute
-      #     define_bit_attributes_on :flags, :flag1, :flag2, :flag3, :type, 3, :stype, 3, :reserved, 7
+      #     # type and stype are 3-bit attributes. reserved is a 7-bit attribute
+      #     define_bit_attr :flags, flag1: 1, flag2: 1, flag3: 1, type: 3, stype: 3, reserved: 7
       #   end
-      # A bit attribute of size 1 bit defines 2 methods:
-      # * +#attr+ which returns a Boolean,
-      # * +#attr=+ which takes and returns a Boolean.
-      # A bit attribute of more bits defines 2 methods:
+      # A bit attribute of size 1 bit defines 3 methods:
       # * +#attr+ which returns an Integer,
-      # * +#attr=+ which takes and returns an Integer.
-      # @param [Symbol] attr attribute name (attribute should be a {BinStruct::Int}
-      #   subclass)
-      # @param [Array] args list of bit attribute names. Name may be followed
-      #   by bit size. If no size is given, 1 bit is assumed.
-      # @raise [ArgumentError] unknown +attr+
+      # * +#attr?+ which returns a Boolean,
+      # * +#attr=+ which accepts an Integer or a Boolean.
+      # A bit attribute of more bits defines only 2 methods:
+      # * +#attr+ which returns an Integer,
+      # * +#attr=+ which takes an Integer.
+      # @param [Symbol] attr attribute name
+      # @param [:big,:little,:native] endian endianess of Integer
+      # @param [Integer] default default value for whole attribute
+      # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
       # @return [void]
-      def define_bit_attrs_on(attr, *args)
-        check_existence_of(attr)
-
-        type = attr_defs[attr].type
-        raise TypeError, "#{attr} is not a BinStruct::Int" unless type < Int
-
-        total_size = type.new.nbits
-        idx = total_size - 1
-
-        until args.empty?
-          arg = args.shift
-          next unless arg.is_a? Symbol
-
-          size = size_from(args)
-
-          unless attr == :_
-            add_bit_methods(attr, arg, size, total_size, idx)
-            register_bit_attr_size(attr, arg, size)
+      # @since 0.3.0
+      def define_bit_attr(attr, endian: :big, default: 0, **fields)
+        width = fields.reduce(0) { |acc, ary| acc + ary.last }
+        bit_attr_klass = BitAttr.create(width: width, endian: endian, **fields)
+        define_attr(attr, bit_attr_klass, default: default)
+        fields.each_key { |field| register_bit_attr_field(attr, field) }
+        bit_attr_klass.new.bit_methods.each do |meth|
+          if meth.to_s.end_with?('=')
+            define_method(meth) { |value| self[attr].send(meth, value) }
+          else
+            define_method(meth) { self[attr].send(meth) }
           end
-
-          idx -= size
         end
       end
 
-      # Remove all bit attributes defined on +attr+
-      # @param [Symbol] attr attribute defining bit attributes
+      # Define a bit attribute, before another attribute
+      # @param [Symbol,nil] other attribute name to create a new one before.
+      #    If +nil+, new attribute is appended.
+      # @param [Symbol] name attribute name to create
+      # @param [:big,:little,:native] endian endianess of Integer
+      # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
       # @return [void]
-      def remove_bit_attrs_on(attr)
-        bits = bit_attrs.delete(attr)
-        return if bits.nil?
+      # @since 0.3.0
+      # @see .define_bit_attr
+      def define_bit_attr_before(other, name, endian: :big, **fields)
+        define_bit_attr(name, endian: endian, **fields)
+        return if other.nil?
 
-        bits.each do |bit, size|
-          undef_method :"#{bit}="
-          undef_method(size == 1 ? "#{bit}?" : bit)
-        end
+        move_attr(name, before: other)
+      end
+
+      # Define a bit attribute after another attribute
+      # @param [Symbol,nil] other attribute name to create a new one after.
+      #    If +nil+, new attribute is appended.
+      # @param [Symbol] name attribute name to create
+      # @param [:big,:little,:native] endian endianess of Integer
+      # @param [Hash{Symbol=>Integer}] fields Hash defining fields. Keys are field names, values are field sizes.
+      # @return [void]
+      # @since 0.3.0
+      # @see .define_bit_attr
+      def define_bit_attr_after(other, name, endian: :big, **fields)
+        define_bit_attr(name, endian: endian, **fields)
+        return if other.nil?
+
+        move_attr(name, after: other)
       end
 
       private
+
+      # @param [Symbol] name
+      # @param [Symbol,nil] before
+      # @param [Symbol,nil] after
+      # @return [void]
+      # @raise [ArgumentError] Both +before+ and +after+ are nil, or both are set.
+      def move_attr(name, before: nil, after: nil)
+        move_check_destination(before, after)
+
+        other = before || after
+        attributes.delete(name)
+        idx = attributes.index(other)
+        raise ArgumentError, "unknown #{other} attribute" if idx.nil?
+
+        idx += 1 unless after.nil?
+        attributes[idx, 0] = name
+      end
+
+      def move_check_destination(before, after)
+        raise ArgumentError 'one of before: and after: arguments MUST be set' if before.nil? && after.nil?
+        raise ArgumentError 'only one of before and after argument MUST be set' if !before.nil? && !after.nil?
+      end
 
       def add_methods(name, type)
         define = []
@@ -328,71 +352,13 @@ module BinStruct
         class_eval define.join("\n")
       end
 
-      def add_bit_methods(attr, name, size, total_size, idx)
-        shift = idx - (size - 1)
-
-        if size == 1
-          add_single_bit_methods(attr, name, size, total_size, shift)
-        else
-          add_multibit_methods(attr, name, size, total_size, shift)
-        end
-      end
-
-      def compute_mask(size, shift)
-        ((2**size) - 1) << shift
-      end
-
-      def compute_clear_mask(total_size, mask)
-        ((2**total_size) - 1) & (~mask & ((2**total_size) - 1))
-      end
-
-      def add_single_bit_methods(attr, name, size, total_size, shift)
-        mask = compute_mask(size, shift)
-        clear_mask = compute_clear_mask(total_size, mask)
-
-        class_eval <<-METHODS, __FILE__, __LINE__ + 1
-          def #{name}?                                                  # def bit?
-            val = (self[:#{attr}].to_i & #{mask}) >> #{shift}           #   val = (self[:attr}].to_i & 1}) >> 1
-            val != 0                                                    #   val != 0
-          end                                                           # end
-          def #{name}=(v)                                               # def bit=(v)
-            val = v ? 1 : 0                                             #   val = v ? 1 : 0
-            self[:#{attr}].value = self[:#{attr}].to_i & #{clear_mask}  #   self[:attr].value = self[:attr].to_i & 0xfffd
-            self[:#{attr}].value |= val << #{shift}                     #   self[:attr].value |= val << 1
-          end                                                           # end
-        METHODS
-      end
-
-      def add_multibit_methods(attr, name, size, total_size, shift)
-        mask = compute_mask(size, shift)
-        clear_mask = compute_clear_mask(total_size, mask)
-
-        class_eval <<-METHODS, __FILE__, __LINE__ + 1
-          def #{name}                                                   # def multibit
-            (self[:#{attr}].to_i & #{mask}) >> #{shift}                 #   (self[:attr].to_i & 6) >> 1
-          end                                                           # end
-          def #{name}=(v)                                               # def multibit=(v)
-            self[:#{attr}].value = self[:#{attr}].to_i & #{clear_mask}  #   self[:attr].value = self[:attr].to_i & 0xfff9
-            self[:#{attr}].value |= (v & #{(2**size) - 1}) << #{shift}    #   self[:attr].value |= (v & 3) << 1
-          end                                                           # end
-        METHODS
-      end
-
-      def register_bit_attr_size(attr, name, size)
-        bit_attrs[attr] = {} if bit_attrs[attr].nil?
-        bit_attrs[attr][name] = size
+      def register_bit_attr_field(attr, field)
+        bit_attrs[attr] ||= []
+        bit_attrs[attr] << field
       end
 
       def attr_defs_property_from(attr, property, options)
         attr_defs[attr].send(:"#{property}=", options.delete(property)) if options.key?(property)
-      end
-
-      def size_from(args)
-        if args.first.is_a? Integer
-          args.shift
-        else
-          1
-        end
       end
 
       def check_existence_of(attr)
@@ -402,7 +368,7 @@ module BinStruct
 
     # Create a new Struct object
     # @param [Hash] options Keys are symbols. They should have name of object
-    #   attributes, as defined by {.define_attr} and by {.define_bit_attrs_on}.
+    #   attributes, as defined by {.define_attr} and by {.define_bit_attr}.
     def initialize(options = {})
       @attributes = {}
       @optional_attributes = {}
@@ -413,8 +379,8 @@ module BinStruct
         initialize_optional(attr)
       end
 
-      self.class.bit_attrs.each_value do |hsh|
-        hsh.each_key do |bit|
+      self.class.bit_attrs.each_value do |bit_fields|
+        bit_fields.each do |bit|
           send(:"#{bit}=", options[bit]) if options[bit]
         end
       end
@@ -599,26 +565,39 @@ module BinStruct
       end
     end
 
+    # @param [Symbol] attr
+    # @return [void]
     def initialize_optional(attr)
       optional = attr_defs[attr].optional
       @optional_attributes[attr] = optional if optional
     end
 
+    # @return [String]
     def inspect_titleize
       title = self.class.to_s
       +"-- #{title} #{'-' * (66 - title.length)}\n"
     end
 
+    # @param [:Symbol] attr
+    # @param [Structable] value
+    # @param [Integer] level
+    # @return [::String]
     def inspect_attribute(attr, value, level = 1)
-      type = value.class.to_s.sub(/.*::/, '')
-      inspect_format(type, attr, value.format_inspect, level)
-    end
-
-    def inspect_format(type, attr, value, level = 1)
       str = inspect_shift_level(level)
-      str << (FMT_ATTR % [type, attr, value])
+      value_lines = value.format_inspect.split("\n")
+      str << (FMT_ATTR % [value.type_name, attr, value_lines.shift])
+      return str if value_lines.empty?
+
+      shift = (FMT_ATTR % ['', '', 'START']).index('START')
+      value_lines.each do |l|
+        str << inspect_shift_level(level)
+        str << (' ' * shift) << l << "\n"
+      end
+      str
     end
 
+    # @param [Integer] level
+    # @return [String]
     def inspect_shift_level(level = 1)
       '  ' * (level + 1)
     end

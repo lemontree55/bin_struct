@@ -58,7 +58,7 @@ module BinStruct
     # Format object when inspecting a {Struct} object
     # @return [::String]
     def format_inspect
-      to_human
+      to_human.to_s
     end
   end
 end
