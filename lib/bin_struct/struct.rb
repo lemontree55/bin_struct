@@ -575,7 +575,7 @@ module BinStruct
     # @return [String]
     def inspect_titleize
       title = self.class.to_s
-      +"-- #{title} #{'-' * (66 - title.length)}\n"
+      "-- #{title} #{'-' * (66 - title.length)}\n"
     end
 
     # @param [:Symbol] attr
