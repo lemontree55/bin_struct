@@ -13,7 +13,7 @@ module BinStruct
   #
   # ===Usage
   # To simply define a new TLV class, do:
-  #   MyTLV = PacketGen::Types::AbstractTLV.create
+  #   MyTLV = BinStruct::AbstractTLV.create
   #   MyTLV.define_type_enum 'one' => 1, 'two' => 2
   # This will define a new +MyTLV+ class, subclass of {AbstractTLV}. This class will
   # define 3 attributes:
@@ -32,9 +32,9 @@ module BinStruct
   #
   # ===Advanced usage
   # Each attribute's type may be changed at generating TLV class:
-  #   MyTLV = PacketGen::Types::AbstractTLV.create(type_class: PacketGen::Types::Int16,
-  #                                                length_class: PacketGen::Types::Int16,
-  #                                                value_class: PacketGen::Header::IP::Addr)
+  #   MyTLV = BinStruct::AbstractTLV.create(type_class: BinStruct::Int16,
+  #                                         length_class: BinStruct::Int16,
+  #                                         value_class: PacketGen::Header::IP::Addr)
   #   tlv = MyTLV.new(type: 1, value: '1.2.3.4')
   #   tlv.type        #=> 1
   #   tlv.length      #=> 4
@@ -43,9 +43,9 @@ module BinStruct
   #
   # Some aliases may also be defined. For example, to create a TLV type
   # whose +type+ attribute should be named +code+:
-  #   MyTLV = PacketGen::Types::AbstractTLV.create(type_class: PacketGen::Types::Int16,
-  #                                                length_class: PacketGen::Types::Int16,
-  #                                                aliases: { code: :type })
+  #   MyTLV = BinStruct::AbstractTLV.create(type_class: BinStruct::Int16,
+  #                                         length_class: BinStruct::Int16,
+  #                                         aliases: { code: :type })
   #   tlv = MyTLV.new(code: 1, value: 'abcd')
   #   tlv.code        #=> 1
   #   tlv.type        #=> 1
@@ -77,11 +77,12 @@ module BinStruct
       #   in the desired order.
       # @param [::String] attr_in_length give attributes to compute length on.
       # @return [Class]
+      # @raise [Error] Called on {AbstractTLV} subclass
       def create(type_class: Int8Enum, length_class: Int8, value_class: String,
                  aliases: {}, attr_order: 'TLV', attr_in_length: 'V')
         unless equal?(AbstractTLV)
           raise Error,
-                '.create cannot be called on a subclass of PacketGen::Types::AbstractTLV'
+                '.create cannot be called on a subclass of BinStruct::AbstractTLV'
         end
 
         klass = Class.new(self)
@@ -91,7 +92,7 @@ module BinStruct
         check_attr_in_length(attr_in_length)
         check_attr_order(attr_order)
         generate_attributes(klass, attr_order, type_class, length_class, value_class)
-
+        generate_aliases_for(klass, aliases)
         aliases.each do |al, orig|
           klass.instance_eval do
             alias_method al, orig if klass.method_defined?(orig)
@@ -102,6 +103,50 @@ module BinStruct
         klass
       end
       # rubocop:enable Metrics/ParameterLists
+
+      # On inheritage, copy aliases and attr_in_length
+      # @param [Class] klass inheriting class
+      # @return [void]
+      # @since 0.4.0
+      # @author LemonTree55
+      def inherited(klass)
+        super
+
+        aliases = @aliases.clone
+        attr_in_length = @attr_in_length.clone
+
+        klass.class_eval do
+          @aliases = aliases
+          @attr_in_length = attr_in_length
+        end
+      end
+
+      # Derive a new TLV class from an existing one
+      # @param [Class,nil] type_class New class to use for +type+. Unchanged if +nil+.
+      # @param [Class,nil] length_class New class to use for +length+. Unchanged if +nil+.
+      # @param [Class,nil] value_class New class to use for +value+. Unchanged if +nil+.
+      # @return [Class]
+      # @raise [Error] Called on {AbstractTLV} class
+      # @since 0.4.0
+      # @author LemonTree55
+      # @example
+      #   # TLV with type and length on 16 bits, value is a BinStruct::String
+      #   FirstTLV = BinStruct::AbstractTLV.create(type_class: BinStruct::Int16, length_class: BinStruct::Int16)
+      #   # TLV with same type and length classes than FirstTLV, but value is an array of Int8
+      #   SecondTLV = FirstTLV.derive(value_class: BinStruct::ArrayOfInt8)
+      def derive(type_class: nil, length_class: nil, value_class: nil, aliases: {})
+        raise Error, ".derive cannot be called on #{name}" if equal?(AbstractTLV)
+
+        klass = Class.new(self)
+        klass.aliases.merge!(aliases)
+        generate_aliases_for(klass, aliases)
+
+        klass.attr_defs[:type].type = type_class unless type_class.nil?
+        klass.attr_defs[:length].type = length_class unless length_class.nil?
+        klass.attr_defs[:value].type = value_class unless value_class.nil?
+
+        klass
+      end
 
       # @!attribute type
       #   @abstract
@@ -165,6 +210,15 @@ module BinStruct
             klass.define_attr(:length, length_class)
           when 'V'
             klass.define_attr(:value, value_class)
+          end
+        end
+      end
+
+      def generate_aliases_for(klass, aliases)
+        aliases.each do |al, orig|
+          klass.instance_eval do
+            alias_method al, orig if klass.method_defined?(orig)
+            alias_method :"#{al}=", :"#{orig}=" if klass.method_defined?(:"#{orig}=")
           end
         end
       end

@@ -94,6 +94,42 @@ module BinStruct
       end
     end
 
+    describe '.derive' do
+      let(:base_class) { AbstractTLV.create }
+
+      it 'creates a derived class with type_class changed' do
+        new_class = base_class.derive(type_class: Int32)
+        expect(new_class.new[:type]).to be_a(Int32)
+        expect(new_class.new[:length]).to be_a(Int8)
+        expect(new_class.new[:value]).to be_a(BinStruct::String)
+      end
+
+      it 'creates a derived class with length_class changed' do
+        new_class = base_class.derive(length_class: Int32)
+        expect(new_class.new[:length]).to be_a(Int32)
+        expect(new_class.new[:type]).to be_a(Int8Enum)
+        expect(new_class.new[:value]).to be_a(BinStruct::String)
+      end
+
+      it 'creates a derived class with value_class changed' do
+        new_class = base_class.derive(value_class: Int32)
+        expect(new_class.new[:value]).to be_a(Int32)
+        expect(new_class.new[:type]).to be_a(Int8Enum)
+        expect(new_class.new[:length]).to be_a(Int8)
+      end
+
+      it 'creates a derived class with all class changed' do
+        new_class = base_class.derive(type_class: Int32, length_class: Int16, value_class: Int64)
+        expect(new_class.new[:type]).to be_a(Int32)
+        expect(new_class.new[:length]).to be_a(Int16)
+        expect(new_class.new[:value]).to be_a(Int64)
+      end
+
+      it 'raises if called on AbtractTLV' do
+      expect { AbstractTLV.derive }.to raise_error(Error).with_message(/cannot be called/)
+      end
+    end
+
     context 'use of instance of generated class' do
       let(:tlv) { AbstractTLV.create(type_class: Int16, length_class: Int16).new }
 
