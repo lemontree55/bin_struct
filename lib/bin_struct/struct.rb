@@ -401,6 +401,15 @@ module BinStruct
       @attributes[attr] = obj
     end
 
+    # Say if struct has given attribute
+    # @param [Symbol] attr attribute name
+    # @return [Boolean]
+    # @since 0.4.0
+    # @author LemonTree55
+    def attribute?(attr)
+      @attributes.key?(attr)
+    end
+
     # Get all attribute names
     # @return [Array<Symbol>]
     def attributes

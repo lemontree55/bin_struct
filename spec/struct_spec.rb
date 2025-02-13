@@ -470,5 +470,17 @@ module BinStruct
         expect(s2.to_s).to eq(binary("\x01\x00\x02\x00\x00\x00\x21\x00\x00\x04"))
       end
     end
+
+    describe '#attribute?' do
+      it 'returns true if given attribute is defined' do
+        s1 = BSStructSpec::OffsetTest.new
+        expect(s1.attribute?(:one)).to be(true)
+      end
+
+      it 'returns false if given attribute is not defined' do
+        s1 = BSStructSpec::OffsetTest.new
+        expect(s1.attribute?(:twelve)).to be(false)
+      end
+    end
   end
 end
