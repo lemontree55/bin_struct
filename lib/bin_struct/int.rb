@@ -55,7 +55,7 @@ module BinStruct
 
     # @abstract
     # @return [::String]
-    # @raise [Error] This is an abstrat method and must be redefined
+    # @raise [Error] This is an abstract method and must be redefined
     def to_s
       raise Error, 'BinStruct::Int#to_s is abstract' unless defined? @packstr
 

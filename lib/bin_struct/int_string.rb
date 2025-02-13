@@ -9,6 +9,13 @@
 module BinStruct
   # Provides a class for creating strings preceeded by their length as an {Int}.
   # By default, a null string will have one byte length (length byte set to 0).
+  # == Examples
+  #   # IntString with 8-bit length
+  #   is8 = BinStruct::IntString.new(value: "abcd")
+  #   is8.to_s   # => "\x04abcd"
+  #   # IntString with 16-bit length
+  #   is16 = BinStruct::IntString.new(length_type: BinStruct::Int16le, value: "abcd")
+  #   is16.to_s  # => "\x04\x00abcd"
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
   class IntString

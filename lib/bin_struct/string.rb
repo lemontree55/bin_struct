@@ -32,7 +32,7 @@ module BinStruct
     # @option options [Int,Proc] :length_from object or proc from which
     #   takes length when reading
     # @option options [Integer] :static_length set a static length for this string
-    # @option options [::String] :value string value (default to +''+)
+    # @option options [::String] :value string value (default to +""+)
     def initialize(options = {})
       register_internal_string(options[:value] || +'')
       initialize_length_from(options)
@@ -47,7 +47,7 @@ module BinStruct
     end
 
     # Populate String from a binary String. Limit length using {LengthFrom} or {#static_length}, if one is set.
-    # @param [::String] str
+    # @param [::String,nil] str
     # @return [self]
     def read(str)
       s = read_with_length_from(str)
@@ -87,7 +87,7 @@ module BinStruct
       self
     end
 
-    # Generate binary string
+    # Generate "binary" string
     # @return [::String]
     def to_s
       @string

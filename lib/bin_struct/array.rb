@@ -9,7 +9,7 @@
 require 'forwardable'
 
 module BinStruct
-  # @abstract Base class to define set of {Struct} subclasses.
+  # @abstract Base class to define set of {Structable} subclasses.
   #
   # This class mimics regular Ruby Array, but it is {Structable} and responds to {LengthFrom}.
   #
@@ -44,10 +44,11 @@ module BinStruct
     # @!method clear
     #   Clear array.
     #   @return [void]
+    #   @see #clear!
     # @!method each
     #   Calls the given block once for each element in self, passing that
-    #   element as a parameter. Returns the array itself.
-    #   @return [::Array]
+    #   element as a parameter. Returns the array itself, or an enumerator if no block is given.
+    #   @return [::Array, Enumerator]
     # @method empty?
     #   Return +true+ if contains no element.
     #   @return [Boolean]
@@ -112,6 +113,7 @@ module BinStruct
 
     # Clear array. Reset associated counter, if any.
     # @return [void]
+    # @see #clear
     def clear!
       @array.clear
       @counter&.from_human(0)
@@ -137,7 +139,8 @@ module BinStruct
 
     # @abstract depend on private method +#record_from_hash+ which should be
     #   declared by subclasses.
-    # Add an object to this array. Do not update associated counter.
+    # Add an object to this array. Do not update associated counter. If associated must be incremented, use
+    # {#<<}
     # @param [Object] obj type depends on subclass
     # @return [self]
     # @see #<<
@@ -154,9 +157,11 @@ module BinStruct
 
     # @abstract depend on private method +#record_from_hash+ which should be
     #   declared by subclasses.
-    # Add an object to this array, and increment associated counter, if any
+    # Add an object to this array, and increment associated counter, if any. If associated counter must not be
+    # incremented, use {#push}.
     # @param [Object] obj type depends on subclass
     # @return [self]
+    # @see #push
     def <<(obj)
       push(obj)
       @counter&.from_human(@counter.to_i + 1)

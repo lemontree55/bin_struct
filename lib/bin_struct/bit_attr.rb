@@ -15,13 +15,14 @@ module BinStruct
   #    define_attr :int32, BinStruct::BitAttr.create(width: 32, a: 16, b: 4, c: 4, d:8)
   #  end
   # @since 0.3.0
+  # @abstract Subclasses must de derived using {.create}.
   # @author LemonTree55
   class BitAttr
     include Structable
 
     # @return [Integer] width in bits of bit attribute
     attr_reader :width
-    # @return [Array[Symbol]]
+    # @return [::Array[Symbol]]
     attr_reader :bit_methods
 
     # @private
@@ -79,9 +80,10 @@ module BinStruct
     # @param [Hash{Symbol=>Integer}] opts initialization values for fields, where keys are field names and values are
     #     initialization values
     # @return [self]
+    # @raise [NotImplementedError] raised when called on {BitAttr} class
     def initialize(opts = {})
       parameters = self.class.parameters
-      raise NotImplementedError, '#initialize may only be called on subclass of {self.class}' if parameters.nil?
+      raise NotImplementedError, "#initialize may only be called on subclass of #{self.class}" if parameters.nil?
 
       @width = parameters.width
       @fields = parameters.fields
@@ -110,7 +112,7 @@ module BinStruct
     end
 
     # Populate bit attribute from +str+
-    # @param [::String,nil] str
+    # @param [#to_s,nil] str
     # @return [self]
     def read(str)
       return self if str.nil?
@@ -175,7 +177,7 @@ module BinStruct
       if size == 1
         instance_eval "def #{name}?; @data[#{name.inspect}] != 0; end\n", __FILE__, __LINE__
         instance_eval "def #{name}=(val); v = case val when TrueClass; 1 when FalseClass; 0 else val end; " \
-                      "@data[#{name.inspect}] = v; end", __FILE__, __LINE__ - 2
+                      "@data[#{name.inspect}] = v; end", __FILE__, __LINE__ - 1
         bit_methods << :"#{name}?"
       else
         instance_eval "def #{name}=(val); @data[#{name.inspect}] = val; end", __FILE__, __LINE__

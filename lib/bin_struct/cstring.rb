@@ -76,14 +76,14 @@ module BinStruct
 
     # @param [Hash] options
     # @option options [Integer] :static_length set a static length for this string
-    # @option options [::String] :value string value (default to +''+)
+    # @option options [::String] :value string value (default to +""+)
     def initialize(options = {})
       register_internal_string(options[:value] || +'')
       @static_length = options[:static_length]
     end
 
     # Populate self from binary string
-    # @param [::String] str
+    # @param [#to_s] str
     # @return [self]
     def read(str)
       s = str.to_s
