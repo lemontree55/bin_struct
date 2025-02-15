@@ -6,10 +6,10 @@ source 'https://rubygems.org'
 gemspec
 
 group :develoment do
-  gem 'rake', '~> 13.0'
-  gem 'rspec', '~> 3.12'
-  gem 'ruby-lsp'
-  gem 'yard', '~>0.9'
+  gem 'rake', '~> 13.0', require: false
+  gem 'rspec', '~> 3.12', require: false
+  gem 'ruby-lsp', require: false
+  gem 'yard', '~>0.9', require: false
 end
 
 group :rubocop do
