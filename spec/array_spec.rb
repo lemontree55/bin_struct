@@ -195,7 +195,7 @@ module BinStruct
 
       it 'may create subclassed objects if set_of type permits it' do
         ary = BSArraySpec::SubclassableSetOf.new
-        ary.read(binary("\x01\x05"))
+        ary.read("\x01\x05".b)
         expect(ary.size).to eq(2)
         expect(ary[0]).to be_a(BSArraySpec::Subclassable)
         expect(ary[1]).to be_a(BSArraySpec::Subclassed)
@@ -210,11 +210,11 @@ module BinStruct
 
       it 'from an Array' do
         array.read([0, 1, 65535])
-        expect(array.to_s).to eq(binary("\x00\x00\x00\x01\xff\xff"))
+        expect(array.to_s).to eq("\x00\x00\x00\x01\xff\xff".b)
       end
 
       it 'from a String' do
-        array.read(binary("\x00\x00\x00\x01\xff\xff"))
+        array.read("\x00\x00\x00\x01\xff\xff".b)
         expect(array[0].to_i).to eq(0)
         expect(array[1].to_i).to eq(1)
         expect(array[2].to_i).to eq(0xffff)

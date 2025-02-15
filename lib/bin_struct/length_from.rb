@@ -30,7 +30,7 @@ module BinStruct
     # @param [#to_s] str
     # @return [::String]
     def read_with_length_from(str)
-      s = BinStruct.force_binary(str.to_s)
+      s = str.to_s.b
       s[0, sz_to_read]
     end
 

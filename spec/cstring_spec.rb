@@ -26,7 +26,7 @@ module BinStruct
     describe '#read' do
       it 'reads a CString' do
         cs = CString.new
-        cs.read binary("abcd\x00")
+        cs.read "abcd\x00".b
         expect(cs.sz).to eq(5)
         expect(cs.length).to eq(4)
         expect(cs).to eq('abcd')
@@ -34,7 +34,7 @@ module BinStruct
 
       it 'reads a CString with static length' do
         cs = CString.new(static_length: 8)
-        cs.read binary("abcd\x00\x00\x00\x00")
+        cs.read "abcd\x00\x00\x00\x00".b
         expect(cs.sz).to eq(8)
         expect(cs.length).to eq(4)
         expect(cs).to eq('abcd')
@@ -45,7 +45,7 @@ module BinStruct
       it 'generates a null-terminated string' do
         cs = CString.new
         cs.read 'This is a String'
-        expect(cs.to_s).to eq(binary("This is a String\x00"))
+        expect(cs.to_s).to eq("This is a String\x00".b)
         expect(cs.length).to eq(16)
         expect(cs.sz).to eq(17)
       end
@@ -53,7 +53,7 @@ module BinStruct
       it 'gets binary form for CString with previously forced length' do
         cs = CString.new(static_length: 20)
         cs.read 'This is a String'
-        expect(cs.to_s).to eq(binary("This is a String\x00\x00\x00\x00"))
+        expect(cs.to_s).to eq("This is a String\x00\x00\x00\x00".b)
         expect(cs.length).to eq(16)
         expect(cs.sz).to eq(20)
 
@@ -61,7 +61,7 @@ module BinStruct
         expect(cs.length).to eq(20)
         expect(cs).to eq('This is a too too lo')
         expect(cs.sz).to eq(20)
-        expect(cs.to_s).to eq(binary("This is a too too l\x00"))
+        expect(cs.to_s).to eq("This is a too too l\x00".b)
       end
     end
   end

@@ -354,7 +354,7 @@ module BinStruct
 
       it 'fallbacks on #read to initialize value' do
         ri = BSStructSpec::ReadInitializer.new(ary: [1, 2, 3])
-        expect(ri.to_s).to eq(binary("\x01\x02\x03"))
+        expect(ri.to_s).to eq("\x01\x02\x03".b)
       end
     end
 
@@ -404,14 +404,14 @@ module BinStruct
       end
 
       it 'which may be parsed' do
-        f.read(binary("\x80\x00\x00\x00\x01\x23\x45\x67"))
+        f.read("\x80\x00\x00\x00\x01\x23\x45\x67".b)
         expect(f.has_optional?).to be(true)
         expect(f.present?(:optional)).to be(true)
         expect(f.optional).to eq(0x1234567)
       end
 
       it 'which may be not parsed' do
-        f.read(binary("\x00\x00\x00\x00\x01\x23\x45\x67"))
+        f.read("\x00\x00\x00\x00\x01\x23\x45\x67".b)
         expect(f.has_optional?).to be(false)
         expect(f.present?(:optional)).to be(false)
         expect(f.optional).to eq(0)
@@ -420,13 +420,13 @@ module BinStruct
       it 'which may be serialized' do
         f.has_optional = true
         f.optional = 0x89abcdef
-        expect(f.to_s).to eq(binary("\x80\x00\x00\x00\x89\xab\xcd\xef"))
+        expect(f.to_s).to eq("\x80\x00\x00\x00\x89\xab\xcd\xef".b)
       end
 
       it 'which may be not serialized' do
         f.has_optional = false
         f.optional = 0x89abcdef
-        expect(f.to_s).to eq(binary("\x00\x00\x00\x00"))
+        expect(f.to_s).to eq("\x00\x00\x00\x00".b)
       end
     end
 
@@ -466,8 +466,8 @@ module BinStruct
         s1 = BSStructSpec::OffsetTest.new(one: 1, two: 2, three: 3, four: 4)
         s2 = s1.dup
         s2.three = 33
-        expect(s1.to_s).to eq(binary("\x01\x00\x02\x00\x00\x00\x03\x00\x00\x04"))
-        expect(s2.to_s).to eq(binary("\x01\x00\x02\x00\x00\x00\x21\x00\x00\x04"))
+        expect(s1.to_s).to eq("\x01\x00\x02\x00\x00\x00\x03\x00\x00\x04".b)
+        expect(s2.to_s).to eq("\x01\x00\x02\x00\x00\x00\x21\x00\x00\x04".b)
       end
     end
 

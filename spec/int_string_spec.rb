@@ -29,11 +29,11 @@ module BinStruct
       let(:is32) { IntString.new(length_type: Int32) }
 
       it 'reads an IntString' do
-        is8.read binary("\x04abcd")
+        is8.read "\x04abcd".b
         expect(is8.length).to eq(4)
         expect(is8.string).to eq('abcd')
 
-        is32.read binary("\x00\x00\x00\x06abcdef")
+        is32.read "\x00\x00\x00\x06abcdef".b
         expect(is32.length).to eq(6)
         expect(is32.string).to eq('abcdef')
       end
@@ -50,17 +50,17 @@ module BinStruct
 
       it 'gets binary form for IntString' do
         is8.string = 'This is a String'
-        expect(is8.to_s).to eq(binary("\x10This is a String"))
+        expect(is8.to_s).to eq("\x10This is a String".b)
         is16.string = 'This is another String'
-        expect(is16.to_s).to eq(binary("\x00\x16This is another String"))
+        expect(is16.to_s).to eq("\x00\x16This is another String".b)
       end
 
       it 'gets binary form for IntString with previously forced length' do
         is8.string = 'This is a String'
         is8.length = 17
-        expect(is8.to_s).to eq(binary("\x11This is a String"))
+        expect(is8.to_s).to eq("\x11This is a String".b)
         is8.length = 10
-        expect(is8.to_s).to eq(binary("\x0aThis is a String"))
+        expect(is8.to_s).to eq("\x0aThis is a String".b)
       end
     end
 

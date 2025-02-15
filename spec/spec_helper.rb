@@ -25,7 +25,3 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 end
-
-def binary(str)
-  BinStruct.force_binary(str)
-end

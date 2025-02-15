@@ -17,8 +17,9 @@ module BinStruct
   # Force binary encoding for +str+
   # @param [String] str
   # @return [String] binary encoded string
+  # @deprecated Use {::String#b} instead of this method
   def self.force_binary(str)
-    str.dup.force_encoding(Encoding::BINARY)
+    str.b
   end
 end
 

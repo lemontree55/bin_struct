@@ -247,7 +247,7 @@ module BinStruct
       #   class MyHeader < BinStruct::Struct
       #     # define a 16-bit attribute named :flag
       #     # flag1, flag2 and flag3 are 1-bit attributes
-      #     # type and stype are 3-bit attributes. reserved is a 7-bit attribute
+      #     # type and stype are 3-bit attributes, reserved is a 7-bit attribute
       #     define_bit_attr :flags, flag1: 1, flag2: 1, flag3: 1, type: 3, stype: 3, reserved: 7
       #   end
       # A bit attribute of size 1 bit defines 3 methods:
@@ -443,12 +443,11 @@ module BinStruct
     def read(str)
       return self if str.nil?
 
-      force_binary(str)
       start = 0
       attributes.each do |attr|
         next unless present?(attr)
 
-        obj = self[attr].read(str[start..])
+        obj = self[attr].read(str.b[start..])
         start += self[attr].sz
         self[attr] = obj unless obj == self[attr]
       end
@@ -480,7 +479,7 @@ module BinStruct
     # @return [String]
     def to_s
       attributes.select { |attr| present?(attr) }
-                .map! { |attr| force_binary @attributes[attr].to_s }.join
+                .map! { |attr| @attributes[attr].to_s.b }.join
     end
 
     # Size of object as binary string
@@ -531,6 +530,7 @@ module BinStruct
     # Force str to binary encoding
     # @param [String] str
     # @return [String]
+    # @deprecated Prefer use of Ruby's {::String#b}
     def force_binary(str)
       BinStruct.force_binary(str)
     end

@@ -75,8 +75,8 @@ module BinStruct
     end
 
     it '#to_s binarize an unsigned 8-bit integer' do
-      expect(int.from_human(127).to_s).to eq(binary("\x7f"))
-      expect(int.from_human(128).to_s).to eq(binary("\x80"))
+      expect(int.from_human(127).to_s).to eq("\x7f".b)
+      expect(int.from_human(128).to_s).to eq("\x80".b)
     end
 
     it '#sz returns 1' do
@@ -93,8 +93,8 @@ module BinStruct
     end
 
     it '#to_s binarize a signed 8-bit integer' do
-      expect(int.from_human(127).to_s).to eq(binary("\x7f"))
-      expect(int.from_human(-128).to_s).to eq(binary("\x80"))
+      expect(int.from_human(127).to_s).to eq("\x7f".b)
+      expect(int.from_human(-128).to_s).to eq("\x80".b)
     end
   end
 
@@ -107,8 +107,8 @@ module BinStruct
     end
 
     it '#to_s binarize an unsigned 16-bit big-endian integer' do
-      expect(int.from_human(32_767).to_s).to eq(binary("\x7f\xff"))
-      expect(int.from_human(32_768).to_s).to eq(binary("\x80\x00"))
+      expect(int.from_human(32_767).to_s).to eq("\x7f\xff".b)
+      expect(int.from_human(32_768).to_s).to eq("\x80\x00".b)
     end
     it '#sz returns 2' do
       expect(int.sz).to eq(2)
@@ -124,8 +124,8 @@ module BinStruct
     end
 
     it '#to_s binarize an unsigned 16-bit little-endian integer' do
-      expect(int.from_human(32_767).to_s).to eq(binary("\xff\x7f"))
-      expect(int.from_human(32_768).to_s).to eq(binary("\x00\x80"))
+      expect(int.from_human(32_767).to_s).to eq("\xff\x7f".b)
+      expect(int.from_human(32_768).to_s).to eq("\x00\x80".b)
     end
   end
 
@@ -152,8 +152,8 @@ module BinStruct
     end
 
     it '#to_s binarize a signed 16-bit big-endian integer' do
-      expect(int.from_human(32_767).to_s).to eq(binary("\x7f\xff"))
-      expect(int.from_human(-32_768).to_s).to eq(binary("\x80\x00"))
+      expect(int.from_human(32_767).to_s).to eq("\x7f\xff".b)
+      expect(int.from_human(-32_768).to_s).to eq("\x80\x00".b)
     end
   end
 
@@ -166,8 +166,8 @@ module BinStruct
     end
 
     it '#to_s binarize a signed 16-bit little-endian integer' do
-      expect(int.from_human(32_767).to_s).to eq(binary("\xff\x7f"))
-      expect(int.from_human(-32_768).to_s).to eq(binary("\x00\x80"))
+      expect(int.from_human(32_767).to_s).to eq("\xff\x7f".b)
+      expect(int.from_human(-32_768).to_s).to eq("\x00\x80".b)
     end
   end
 
@@ -186,8 +186,8 @@ module BinStruct
 
   RSpec.describe Int24 do
     let(:int) { Int24.new }
-    let(:strint1) { binary("\x7f\xff\xff") }
-    let(:strint2) { binary("\x80\x00\x00") }
+    let(:strint1) { "\x7f\xff\xff".b }
+    let(:strint2) { "\x80\x00\x00".b }
 
     it '#read an unsigned 24-bit big-endian integer' do
       expect(int.read(strint1).to_i).to eq(0x7f_ffff)
@@ -204,8 +204,8 @@ module BinStruct
 
   RSpec.describe Int24le do
     let(:int) { Int24le.new }
-    let(:strint1) { binary("\xff\xff\x7f") }
-    let(:strint2) { binary("\x00\x00\x80") }
+    let(:strint1) { "\xff\xff\x7f".b }
+    let(:strint2) { "\x00\x00\x80".b }
 
     it '#read an unsigned 24-bit little-endian integer' do
       expect(int.read(strint1).to_i).to eq(0x7f_ffff)
@@ -221,8 +221,8 @@ module BinStruct
   RSpec.describe Int24n do
     let(:int) { Int24n.new }
     let(:endianess) { [1].pack('S').unpack('n') == 1 ? :big : :little }
-    let(:strint1) { binary(endianess == :big ? "\x7f\xff\xff" : "\xff\xff\x7f") }
-    let(:strint2) { binary(endianess == :big ? "\x80\x00\x00" : "\x00\x00\x80") }
+    let(:strint1) { endianess == :big ? "\x7f\xff\xff" : "\xff\xff\x7f".b }
+    let(:strint2) { endianess == :big ? "\x80\x00\x00" : "\x00\x00\x80".b }
     it '#read an unsigned 24-bit little-endian integer' do
       expect(int.read(strint1).to_i).to eq(0x7f_ffff)
       expect(int.read(strint2).to_i).to eq(0x80_0000)
@@ -240,8 +240,8 @@ module BinStruct
       expect(int.read("\x80\x00\x00\x00").to_i).to eq(0x8000_0000)
     end
     it '#to_s binarize an unsigned 32-bit big-endian integer' do
-      expect(int.from_human(0x7fff_ffff).to_s).to eq(binary("\x7f\xff\xff\xff"))
-      expect(int.from_human(0x8000_0000).to_s).to eq(binary("\x80\x00\x00\x00"))
+      expect(int.from_human(0x7fff_ffff).to_s).to eq("\x7f\xff\xff\xff".b)
+      expect(int.from_human(0x8000_0000).to_s).to eq("\x80\x00\x00\x00".b)
     end
     it '#sz returns 4' do
       expect(int.sz).to eq(4)
@@ -255,8 +255,8 @@ module BinStruct
       expect(int.read("\x00\x00\x00\x80").to_i).to eq(0x8000_0000)
     end
     it '#to_s binarize an unsigned 32-bit little-endian integer' do
-      expect(int.from_human(0x7fff_ffff).to_s).to eq(binary("\xff\xff\xff\x7f"))
-      expect(int.from_human(0x8000_0000).to_s).to eq(binary("\x00\x00\x00\x80"))
+      expect(int.from_human(0x7fff_ffff).to_s).to eq("\xff\xff\xff\x7f".b)
+      expect(int.from_human(0x8000_0000).to_s).to eq("\x00\x00\x00\x80".b)
     end
   end
 
@@ -279,8 +279,8 @@ module BinStruct
       expect(int.read("\x80\x00\x00\x00").to_i).to eq(-0x8000_0000)
     end
     it '#to_s binarize a signed 32-bit big-endian integer' do
-      expect(int.from_human(0x7fff_ffff).to_s).to eq(binary("\x7f\xff\xff\xff"))
-      expect(int.from_human(-0x8000_0000).to_s).to eq(binary("\x80\x00\x00\x00"))
+      expect(int.from_human(0x7fff_ffff).to_s).to eq("\x7f\xff\xff\xff".b)
+      expect(int.from_human(-0x8000_0000).to_s).to eq("\x80\x00\x00\x00".b)
     end
   end
 
@@ -291,8 +291,8 @@ module BinStruct
       expect(int.read("\x00\x00\x00\x80").to_i).to eq(-0x8000_0000)
     end
     it '#to_s binarize a signed 32-bit little-endian integer' do
-      expect(int.from_human(0x7fff_ffff).to_s).to eq(binary("\xff\xff\xff\x7f"))
-      expect(int.from_human(-0x8000_0000).to_s).to eq(binary("\x00\x00\x00\x80"))
+      expect(int.from_human(0x7fff_ffff).to_s).to eq("\xff\xff\xff\x7f".b)
+      expect(int.from_human(-0x8000_0000).to_s).to eq("\x00\x00\x00\x80".b)
     end
   end
 
@@ -395,8 +395,8 @@ module BinStruct
         end
         it "#to_s binarize an unsigned 64-bit #{endian}-endian integer" do
           fixtures = INT64[endian][us]
-          expect(@int.from_human(fixtures[0][:int]).to_s).to eq(binary(fixtures[0][:str]))
-          expect(@int.from_human(fixtures[1][:int]).to_s).to eq(binary(fixtures[1][:str]))
+          expect(@int.from_human(fixtures[0][:int]).to_s).to eq(fixtures[0][:str].b)
+          expect(@int.from_human(fixtures[1][:int]).to_s).to eq(fixtures[1][:str].b)
         end
         it '#sz returns 8' do
           expect(@int.sz).to eq(8)

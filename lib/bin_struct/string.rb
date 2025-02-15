@@ -83,14 +83,14 @@ module BinStruct
     # @param [#to_s] str
     # @return [self]
     def <<(str)
-      @string << BinStruct.force_binary(str.to_s)
+      @string << str.to_s.b
       self
     end
 
     # Generate "binary" string
     # @return [::String]
     def to_s
-      @string
+      @string.b
     end
 
     alias sz length
@@ -100,8 +100,7 @@ module BinStruct
     private
 
     def register_internal_string(str)
-      @string = str
-      BinStruct.force_binary(@string)
+      @string = str.b
     end
   end
 end

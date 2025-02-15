@@ -102,7 +102,7 @@ module BinStruct
       else
         s = "#{string}\x00"
       end
-      BinStruct.force_binary(s)
+      s.b
     end
 
     # Append the given string to CString
@@ -134,7 +134,7 @@ module BinStruct
     # @param [::String] str
     # @return [self]
     def from_human(str)
-      read str
+      read(str)
     end
 
     # Get human-readable string
@@ -146,8 +146,7 @@ module BinStruct
     private
 
     def register_internal_string(str)
-      @string = str
-      BinStruct.force_binary(@string)
+      @string = str.b
     end
 
     def remove_null_character

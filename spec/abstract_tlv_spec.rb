@@ -81,7 +81,7 @@ module BinStruct
       it 'accepts setting attributes in different order' do
         tlv_class = AbstractTLV.create(attr_order: 'LVT')
         tlv = tlv_class.new(type: 1, value: 'abc')
-        expect(tlv.to_s).to eq(binary("\x03abc\x01"))
+        expect(tlv.to_s).to eq("\x03abc\x01".b)
       end
 
       it 'raises if attr_order is not set properly' do
@@ -146,7 +146,7 @@ module BinStruct
           tlv.read(bin_str)
           expect(tlv.type).to eq(1)
           expect(tlv.length).to eq(3)
-          expect(tlv.value).to eq(binary("\x12\x34\x56"))
+          expect(tlv.value).to eq("\x12\x34\x56".b)
         end
       end
 
@@ -236,7 +236,7 @@ module BinStruct
           ltv.read(bin_str)
           expect(ltv.length).to eq(7)
           expect(ltv.type).to eq(1)
-          expect(ltv.value).to eq(binary("\x12\x34\x56"))
+          expect(ltv.value).to eq("\x12\x34\x56".b)
         end
       end
 
