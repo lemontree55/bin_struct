@@ -19,7 +19,7 @@ module BinStruct
 
     def_delegators :@string, :[], :length, :size, :inspect, :==,
                    :unpack, :force_encoding, :encoding, :index, :empty?,
-                   :encode, :slice, :slice!, :[]=
+                   :encode, :slice, :slice!, :[]=, :b
 
     # Underlying Ruby String
     # @return [::String]
