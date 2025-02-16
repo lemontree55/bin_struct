@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## HEAD
+
+### Added
+
+- Add `String#b` to mimic Ruby's `String`
+
+### Deprecated
+
+- Deprecate `BinStruct.force_binary` and `Struct.force_binary` in favor of Ruby's `String#b`
+
 ## 0.4.0 - 2025-02-13
 
 ### Added
