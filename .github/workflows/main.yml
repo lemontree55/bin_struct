@@ -17,7 +17,6 @@ jobs:
           - '3.2'
           - '3.3'
           - '3.4'
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up Ruby
@@ -27,3 +26,15 @@ jobs:
         bundler-cache: true
     - name: Run the spec task
       run: bundle exec rake spec
+
+  yard-doctest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+        bundler-cache: true
+    - name: Run the yard:doctest task
+      run: bundle exec rake yard:doctest
