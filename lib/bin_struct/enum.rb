@@ -12,21 +12,23 @@ module BinStruct
   # An {Enum} type is used to handle an {Int} attribute with limited
   # and named values.
   #
-  # == Simple example
-  #   enum = Int8Enum.new('low' => 0, 'medium' => 1, 'high' => 2})
-  # In this example, +enum+ is a 8-bit attribute which may take one
-  # among three values: +low+, +medium+ or +high+:
-  #   enum.value = 'high'
-  #   enum.value              # => 2
-  #   enum.value = 1
-  #   enum.value              # => 1
-  #   enum.to_human           # => "medium"
   # Setting an unknown name will raise an exception:
   #   enum.value = 'unknown'  # => raise!
   # But {#read} and {#value=} will not raise when reading/setting an out-of-bound integer. This
   # to enable decoding (or forging) of bad packets.
   #   enum.read("\x05".b).value # => 5
   #   enum.value = 4            # => 4
+  #
+  # @example Simple example
+  #   # Define an enum on 8-bit integer. It may take one among
+  #   # three values: low, medium or high
+  #   enum = BinStruct::Int8Enum.new(enum: {'low' => 0, 'medium' => 1, 'high' => 2})
+  #   enum.value = 'high'
+  #   enum.value              # => 2
+  #   enum.value = 1
+  #   enum.value              # => 1
+  #   enum.to_human           # => "medium"
+  #
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
   class Enum < Int

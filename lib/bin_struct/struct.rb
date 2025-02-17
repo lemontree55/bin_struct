@@ -32,8 +32,8 @@ module BinStruct
   # Attributes may also be accessed through {#[]} ans {#[]=}. These methods give access
   # to type object:
   #   mybs = MyBinaryStructure.new
-  #   mybs.attr1     # => Integer
-  #   mybs[:attr1]   # => BinStruct::Int8
+  #   mybs.attr1.class     # => Integer
+  #   mybs[:attr1].class   # => BinStruct::Int8
   #
   # {#initialize} accepts an option hash to populate attributes. Keys are attribute
   # name symbols, and values are those expected by writer accessor.
@@ -57,7 +57,7 @@ module BinStruct
   # +#body+, +#body=+, +#mac_addr+ and +#mac_addr=+.
   #
   # {.define_attr} has many options (third optional Hash argument):
-  # * +:default+ gives default attribute value. It may be a simple value (an Integer
+  # * +:default+ to define default attribute value. It may be a simple value (an Integer
   #   for an Int attribute, for example) or a lambda,
   # * +:builder+ to give a builder/constructor lambda to create attribute. The lambda
   #   takes 2 arguments: {Struct} subclass object owning attribute, and type class as passes
@@ -97,7 +97,7 @@ module BinStruct
   # * {.define_attr_before} and {.define_bit_attr_before} to define a new attribute before an existing one,
   # * {.define_attr_after} and {.define_bit_attr_after} to define a new attribute after an existing onr,
   # * {.remove_attr} to remove an existing attribute,
-  # * {.uptade_attr} to change options of an attribute (but not its type),
+  # * {.update_attr} to change options of an attribute (but not its type),
   #
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55

@@ -1,0 +1,5 @@
+--plugin yard-doctest
+lib/bin_struct/*.rb
+lib/bin_struct.rb
+-
+LICENSE.txt

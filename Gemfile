@@ -10,6 +10,7 @@ group :develoment do
   gem 'rspec', '~> 3.12', require: false
   gem 'ruby-lsp', require: false
   gem 'yard', '~>0.9', require: false
+  gem 'yard-doctest'
 end
 
 group :rubocop do

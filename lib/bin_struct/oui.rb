@@ -8,10 +8,11 @@
 
 module BinStruct
   # OUI type, defined as a set of 3 bytes
-  #  oui = OUI.new
+  # @example
+  #  oui = BinStruct::OUI.new
   #  oui.from_human('00:01:02')
   #  oui.to_human   # => "00:01:02"
-  #  oui.to_s       # => "\x00\x01\x03"
+  #  oui.to_s       # => "\x00\x01\x02".b
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
   class OUI < Struct

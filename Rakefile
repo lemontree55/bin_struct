@@ -12,10 +12,11 @@ RuboCop::RakeTask.new do |task|
 end
 
 require 'yard'
+require 'yard/doctest/rake'
 
 YARD::Rake::YardocTask.new do |t|
   t.options = ['--no-private']
-  t.files = ['lib/**/*.rb', '-', 'LICENSE.txt']
 end
+YARD::Doctest::RakeTask.new
 
 task default: %i[spec rubocop]

@@ -10,6 +10,9 @@ require 'forwardable'
 
 module BinStruct
   # This class handles null-terminated strings (aka C strings).
+  # # @example
+  #   cstr = BinStruct::CString.new(value: 'abcd')
+  #   cstr.to_s #=> "abcd\x00".b
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
   class CString

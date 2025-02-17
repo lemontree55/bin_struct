@@ -6,13 +6,10 @@
 # Copyright (C) 2024 LemonTree55 <lenontree@proton.me>
 # This program is published under MIT license.
 
-# BinStruct module
-# @author LemonTree55
 module BinStruct
   # @abstract Base class to define type-length-value data.
   #
-  # ===Usage
-  # To simply define a new TLV class, do:
+  # You have to define a concrete class from AbstractTLV
   #   MyTLV = BinStruct::AbstractTLV.create
   #   MyTLV.define_type_enum 'one' => 1, 'two' => 2
   # This will define a new +MyTLV+ class, subclass of {AbstractTLV}. This class will
@@ -23,26 +20,33 @@ module BinStruct
   # +.define_type_enum+ is, here, necessary to define enum hash to be used
   # for +#type+ accessor, as this one is defined as an {Enum}.
   #
-  # This new defined class may now be easily used:
+  # @example Basic usage
+  #   MyTLV = BinStruct::AbstractTLV.create
+  #   MyTLV.define_type_enum 'one' => 1, 'two' => 2
+  #
   #   tlv = MyTLV.new(type: 1, value: 'abcd')  # automagically set #length from value
   #   tlv.type        #=> 1
   #   tlv.human_type  #=> 'one'
   #   tlv.length      #=> 4
   #   tlv.value       #=> "abcd"
   #
-  # ===Advanced usage
-  # Each attribute's type may be changed at generating TLV class:
+  # @example Change attribute types
+  #   # Change type for each attribute
+  #   # Type and length are 16-bit big endian integers
+  #   # Value is a OUI
   #   MyTLV = BinStruct::AbstractTLV.create(type_class: BinStruct::Int16,
   #                                         length_class: BinStruct::Int16,
-  #                                         value_class: PacketGen::Header::IP::Addr)
-  #   tlv = MyTLV.new(type: 1, value: '1.2.3.4')
+  #                                         value_class: BinStruct::OUI)
+  #   tlv = MyTLV.new(type: 1, value: '01:02:03')
   #   tlv.type        #=> 1
-  #   tlv.length      #=> 4
-  #   tlv.value       #=> '1.2.3.4'
-  #   tlv.to_s        #=> "\x00\x01\x00\x04\x01\x02\x03\x04"
+  #   tlv.length      #=> 3
+  #   tlv.value       #=> '01:02:03'
+  #   tlv.to_s        #=> "\x00\x01\x00\x03\x01\x02\x03"
   #
-  # Some aliases may also be defined. For example, to create a TLV type
-  # whose +type+ attribute should be named +code+:
+  # @example Using aliases
+  #   # Type and length are 16-bit big endian integers
+  #   # Value is a string
+  #   # code is an alias for type
   #   MyTLV = BinStruct::AbstractTLV.create(type_class: BinStruct::Int16,
   #                                         length_class: BinStruct::Int16,
   #                                         aliases: { code: :type })

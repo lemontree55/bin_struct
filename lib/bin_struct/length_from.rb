@@ -9,7 +9,7 @@
 module BinStruct
   # This module is a mixin adding +length_from+ capacity to a type.
   # +length_from+ capacity is the capacity, for a type, to gets its
-  # length from another object.
+  # length from another object. For an example, see {String}.
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
   module LengthFrom

@@ -87,6 +87,23 @@ module BinStruct
 
     # @param [Hash] options
     # @option options [Int] counter Int object used as a counter for this set
+    # @example counter example
+    #   # Define a counter
+    #   counter = BinStruct::Int8.new
+    #   counter.to_i # => 0
+    #
+    #   # Define an array with associated counter
+    #   ary = BinStruct::ArrayOfInt8.new(counter: counter)
+    #   # Add 2 elements to arry, increment counter twice
+    #   ary.read([1, 2])
+    #   counter.to_i #=> 2
+    #   # Add a third element
+    #   ary << BinStruct::Int8.new(value: 42)
+    #   counter.to_i #=> 3
+    #
+    #   # push does not increment the counter
+    #   ary.push(BinStruct::Int8.new(value: 100))
+    #   counter.to_i #=> 3
     def initialize(options = {})
       @counter = options[:counter]
       @array = []
@@ -271,30 +288,65 @@ module BinStruct
   end
 
   # Specialized {Array} to handle serie of {Int8}.
+  # @example
+  #   ary = BinStruct::ArrayOfInt8.new
+  #   ary.read([0, 1, 2])
+  #   ary.to_s #=> "\x00\x01\x02".b
+  #
+  #   ary.read("\x05\x06")
+  #   ary.map(&:to_i) #=> [5, 6]
   class ArrayOfInt8 < Array
     include ArrayOfIntMixin
     set_of Int8
   end
 
   # Specialized {Array} to handle serie of {Int16}.
+  # @example
+  #   ary = BinStruct::ArrayOfInt16.new
+  #   ary.read([0, 1, 2])
+  #   ary.to_s #=> "\x00\x00\x00\x01\x00\x02".b
+  #
+  #   ary.read("\x05\x06")
+  #   ary.map(&:to_i) #=> [0x0506]
   class ArrayOfInt16 < Array
     include ArrayOfIntMixin
     set_of Int16
   end
 
   # Specialized {Array} to handle serie of {Int16le}.
+  # @example
+  #   ary = BinStruct::ArrayOfInt16le.new
+  #   ary.read([0, 1, 2])
+  #   ary.to_s #=> "\x00\x00\x01\x00\x02\x00".b
+  #
+  #   ary.read("\x05\x06")
+  #   ary.map(&:to_i) #=> [0x0605]
   class ArrayOfInt16le < Array
     include ArrayOfIntMixin
     set_of Int16le
   end
 
   # Specialized {Array} to handle serie of {Int32}.
+  # @example
+  #   ary = BinStruct::ArrayOfInt32.new
+  #   ary.read([0, 1, 2])
+  #   ary.to_s #=> "\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x02".b
+  #
+  #   ary.read("\x00\x00\x05\x06")
+  #   ary.map(&:to_i) #=> [0x00000506]
   class ArrayOfInt32 < BinStruct::Array
     include ArrayOfIntMixin
     set_of Int32
   end
 
   # Specialized {Array} to handle serie of {Int32le}.
+  # @example
+  #   ary = BinStruct::ArrayOfInt32le.new
+  #   ary.read([0, 1, 2])
+  #   ary.to_s #=> "\x00\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00".b
+  #
+  #   ary.read("\x00\x00\x05\x06")
+  #   ary.map(&:to_i) #=> [0x06050000]
   class ArrayOfInt32le < BinStruct::Array
     include ArrayOfIntMixin
     set_of Int32le

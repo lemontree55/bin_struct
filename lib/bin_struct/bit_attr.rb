@@ -7,13 +7,23 @@
 require 'digest'
 
 module BinStruct
-  # Define a bitfield attribute to embed in a {Struct}.
+  # Define a bitfield attribute to embed in a {Struct}. Use it through {Struct.define_bit_attr}
   #
+  # @example
   #  class MyStruct < BinStruct::Struct
   #    # Create a 32-bit bitfield attribute, with fields a (16 bits), b and c (4 bits each) and d (8 bits).
   #    # a is the leftmost field in bitfield, and d the rightmost one.
-  #    define_attr :int32, BinStruct::BitAttr.create(width: 32, a: 16, b: 4, c: 4, d:8)
+  #    define_bit_attr :int32, width: 32, a: 16, b: 4, c: 4, d:8
   #  end
+  #
+  #  s1 = MyStruct.new(int32: 0x12345678)
+  #  s1.a #=> 0x1234
+  #  s1.b #=> 5
+  #  s1.c #=> 6
+  #  s1.d #=> 0x78
+  #
+  #  s2 = MyStruct.new(a: 0x1234, d: 0x42)
+  #  s2.to_s #=> "\x12\x34\x00\x42".b
   # @since 0.3.0
   # @abstract Subclasses must de derived using {.create}.
   # @author LemonTree55
