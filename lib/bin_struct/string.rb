@@ -10,6 +10,33 @@ require 'forwardable'
 
 module BinStruct
   # This class mimics regular String, but it is {Structable}.
+  #
+  # It may take its length from another field ({LengthFrom} capacity). It may also has a static length
+  # (i.e. string has always the same length, whatever its content is).
+  #
+  # @example Basic example
+  #   str = BinStruct::String.new
+  #   str.read("abc")
+  #   str.to_s #=> "abc".b
+  #
+  # @example LengthFrom example
+  #   class StrLen < BinStruct::Struct
+  #     define_attr :length, BinStruct::Int8
+  #     define_attr :str, BinStruct::String, builder: ->(h, t) { t.new(length_from: h[:length]) }
+  #   end
+  #
+  #   # Length is 3, but rest of data is 4 byte long. Only 3 bytes will be read.
+  #   s = StrLen.new.read("\x03abcd")
+  #   s.length #=> 3
+  #   s.str.to_s #=> "abc".b
+  #   s.to_s # => "\x03abc".b
+  #
+  # @example static length example
+  #   s = BinStruct::String.new(static_length: 10)
+  #   s.sz #=> 10
+  #   s.to_s #=> "\0\0\0\0\0\0\0\0\0\0".b
+  #   s.read("01234567890123456789")
+  #   s.to_s #=> "0123456789".b
   # @author Sylvain Daubert (2016-2024)
   # @author LemonTree55
   class String
@@ -90,10 +117,15 @@ module BinStruct
     # Generate "binary" string
     # @return [::String]
     def to_s
-      @string.b
+      if static_length?
+        s = @string[0, static_length]
+        s << ("\x00" * (static_length - s.length))
+        s.b
+      else
+        @string.b
+      end
     end
 
-    alias sz length
     alias to_human to_s
     alias from_human read
 

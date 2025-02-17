@@ -55,5 +55,29 @@ module BinStruct
         expect(str).to eq(read_str[0..11])
       end
     end
+    context "with static length" do
+      let(:s) { String.new(static_length: 10) }
+
+      it 'always has the same size' do
+        expect(s.sz).to eq(10)
+        s.read("abcd")
+        expect(s.sz).to eq(10)
+      end
+
+      it 'reads at most static length data' do
+        s.read('abcdefghijklmnopqrstuvwxyz'.b)
+        expect(s.to_s).to eq('abcdefghij'.b)
+      end
+
+      it 'serailizes an empty string with all zeros' do
+        expect(s.to_s).to eq((([0] * 10).pack('C*')))
+      end
+
+
+      it 'serailizes with limit to static length' do
+        s.string[0, 1] = '12345678910111213'
+        expect(s.to_s).to eq('1234567891'.b)
+      end
+    end
   end
 end
