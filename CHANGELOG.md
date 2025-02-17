@@ -3,15 +3,20 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## HEAD
+## 0.5.0 - 2025-02-17
 
 ### Added
 
 - Add `String#b` to mimic Ruby's `String`
+- Add a lot of examples in YARD documentation. These examples are checked using yard-doctest.
 
 ### Deprecated
 
 - Deprecate `BinStruct.force_binary` and `Struct.force_binary` in favor of Ruby's `String#b`
+
+### Fixed
+
+- Fix `String#to_s` when static_length is set. `#to_s` was not aware of static length option.
 
 ## 0.4.0 - 2025-02-13
 
