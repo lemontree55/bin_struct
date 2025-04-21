@@ -482,5 +482,17 @@ module BinStruct
         expect(s1.attribute?(:twelve)).to be(false)
       end
     end
+
+    describe '#clone' do
+      it 'clones singleton methods' do
+        st = BSStructSpec::OffsetTest.new
+        expect(st.clone.to_s).to eq(st.to_s)
+      end
+
+      it 'clones bit singleton methods' do
+        st = BSStructSpec::SOptional.new(u32: 0x12345678)
+        expect(st.clone.to_s).to eq(st.to_s)
+      end
+    end
   end
 end

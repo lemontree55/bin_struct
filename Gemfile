@@ -6,9 +6,12 @@ source 'https://rubygems.org'
 gemspec
 
 group :develoment do
+  gem 'debug', require: false
   gem 'rake', '~> 13.0', require: false
   gem 'rspec', '~> 3.12', require: false
   gem 'ruby-lsp', require: false
+  gem 'ruby-lsp-rspec', require: false
+  gem 'webrick', '~> 1.9', require: false
   gem 'yard', '~>0.9', require: false
   gem 'yard-doctest'
 end
