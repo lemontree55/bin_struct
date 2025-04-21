@@ -32,8 +32,6 @@ module BinStruct
 
     # @return [Integer] width in bits of bit attribute
     attr_reader :width
-    # @return [::Array[Symbol]]
-    attr_reader :bit_methods
 
     # @private
     Parameters = Struct.new(:width, :fields, :int)
@@ -44,6 +42,10 @@ module BinStruct
       # @private
       # @return [Parameters]
       attr_reader :parameters
+
+      # @private
+      # @return [::Array[Symbol]]
+      attr_reader :bit_methods
 
       # Create a new {BitAttr} subclass with specified parameters
       # @param [Integer] width size of bitfields in bits. Must be a size of an {Int} (8, 16, 24, 32 or 64 bits).
@@ -64,10 +66,7 @@ module BinStruct
         total_size = fields.reduce(0) { |acc, ary| acc + ary.last }
         raise ArgumentError, "sum of bitfield sizes is not equal to #{width}" unless total_size == width
 
-        cache[hsh] = Class.new(self) do
-          int_klass = BinStruct.const_get("Int#{width}")
-          @parameters = Parameters.new(width, fields, int_klass.new(endian: endian)).freeze
-        end
+        cache[hsh] = create_subclass(width, endian, fields.dup.freeze)
       end
 
       private
@@ -83,6 +82,39 @@ module BinStruct
       # @return [::String]
       def compute_hash(*params)
         Digest::MD5.digest(Marshal.dump(params))
+      end
+
+      def create_subclass(width, endian, fields)
+        klass = Class.new(self) do
+          int_klass = BinStruct.const_get("Int#{width}")
+          @parameters = Parameters.new(width, fields, int_klass.new(endian: endian)).freeze
+          @bit_methods = []
+        end
+
+        define_methods(klass, fields)
+        klass
+      end
+
+      # @param [Class] {BitAttr} subclass
+      # @param [Hash{Symbol => Integer}] fields
+      # @return [void]
+      def define_methods(klass, fields)
+        define_str = +''
+        fields.each do |name, size|
+          define_str << "def #{name}; @data[#{name.inspect}]; end\n"
+          klass.bit_methods << name
+          klass.bit_methods << :"#{name}="
+
+          if size == 1
+            define_str << "def #{name}?; @data[#{name.inspect}] != 0; end\n"
+            klass.bit_methods << :"#{name}?"
+            define_str << "def #{name}=(val); v = case val when TrueClass; 1 when FalseClass; 0 else val end; " \
+                          "@data[#{name.inspect}] = v; end\n"
+          else
+            define_str << "def #{name}=(val); @data[#{name.inspect}] = val; end\n"
+          end
+        end
+        klass.class_eval(define_str)
       end
     end
 
@@ -101,11 +133,19 @@ module BinStruct
       @data = {}
       @bit_methods = []
 
-      parameters.fields.each do |name, size|
+      parameters.fields.each_key do |name|
         @data[name] = opts[name] || 0
-        define_methods(name, size)
       end
       @bit_methods.freeze
+    end
+
+    def initialize_copy(_other)
+      @data = @data.dup
+    end
+
+    # @return [::Array[Symbol]]
+    def bit_methods
+      self.class.bit_methods
     end
 
     # Get type name
@@ -174,25 +214,6 @@ module BinStruct
       end
 
       self
-    end
-
-    # @param [Symbol] name
-    # @return [void]
-    def define_methods(name, size)
-      instance_eval "def #{name}; @data[#{name.inspect}]; end\n", __FILE__, __LINE__ # def name; data[:name]; end
-      bit_methods << name
-      bit_methods << :"#{name}="
-
-      # rubocop:disable Style/DocumentDynamicEvalDefinition
-      if size == 1
-        instance_eval "def #{name}?; @data[#{name.inspect}] != 0; end\n", __FILE__, __LINE__
-        instance_eval "def #{name}=(val); v = case val when TrueClass; 1 when FalseClass; 0 else val end; " \
-                      "@data[#{name.inspect}] = v; end", __FILE__, __LINE__ - 1
-        bit_methods << :"#{name}?"
-      else
-        instance_eval "def #{name}=(val); @data[#{name.inspect}] = val; end", __FILE__, __LINE__
-      end
-      # rubocop:enable Style/DocumentDynamicEvalDefinition
     end
   end
 end

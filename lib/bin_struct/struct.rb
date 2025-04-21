@@ -268,13 +268,15 @@ module BinStruct
         bit_attr_klass = BitAttr.create(width: width, endian: endian, **fields)
         define_attr(attr, bit_attr_klass, default: default)
         fields.each_key { |field| register_bit_attr_field(attr, field) }
+        define_str = +''
         bit_attr_klass.new.bit_methods.each do |meth|
-          if meth.to_s.end_with?('=')
-            define_method(meth) { |value| self[attr].send(meth, value) }
-          else
-            define_method(meth) { self[attr].send(meth) }
-          end
+          define_str << if meth.to_s.end_with?('=')
+                          "def #{meth}(value); self[:#{attr}].#{meth}(value); end\n"
+                        else
+                          "def #{meth}; self[:#{attr}].#{meth}; end\n"
+                        end
         end
+        class_eval(define_str)
       end
 
       # Define a bit attribute, before another attribute
